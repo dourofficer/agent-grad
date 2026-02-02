@@ -1,0 +1,624 @@
+================================================================================
+TEXTGRAD BACKWARD PASS PROMPTS
+================================================================================
+
+Problem: What is the last word before the second chorus of the King of Pop's fifth single from his sixth studio album?
+Expected Answer: stare
+Wrong Answer: bite
+Number of steps: 10
+Number of backward prompts: 9
+
+================================================================================
+INITIAL LOSS (Starting Gradient)
+================================================================================
+FAILURE DETECTED
+
+The multi-agent system attempted to solve:
+What is the last word before the second chorus of the King of Pop's fifth single from his sixth studio album?
+
+Expected answer: stare
+
+Actual final output (Step 9):
+Updated Ledger: The request has been successfully addressed.
+The last word before the second chorus of 'Human Nature' is 'bite.'
+Request satisfied: TRUE
+FINAL ANSWER: bite
+
+The system FAILED to produce the correct result. 
+Trace back through the reasoning chain to find where errors originated.
+
+================================================================================
+BACKWARD PROMPT 1
+Analyzing: Step 9 -> Step 8
+Output Node: Orchestrator (Step 9)
+Input Node: WebSurfer (Step 8)
+================================================================================
+
+You are analyzing a failure in a multi-agent orchestration decision.
+
+## Context
+PROBLEM: What is the last word before the second chorus of the King of Pop's fifth single from his sixth studio album?
+GROUND TRUTH: stare
+
+## The Orchestrator Decision (Step 9)
+```
+Updated Ledger: The request has been successfully addressed.
+The last word before the second chorus of 'Human Nature' is 'bite.'
+Request satisfied: TRUE
+FINAL ANSWER: bite
+```
+
+Based on input (Step 8, WebSurfer):
+```
+The last word before the second chorus in Michael Jackson's song "Human Nature" is "bite." 
+The lyrics preceding the second chorus are, "Then let me take a bite."
+```
+
+## Downstream Issue
+```
+FAILURE DETECTED
+
+The multi-agent system attempted to solve:
+What is the last word before the second chorus of the King of Pop's fifth single from his sixth studio album?
+
+Expected answer: stare
+
+Actual final output (Step 9):
+Updated Ledger: The request has been successfully addressed.
+The last word before the second chorus of 'Human Nature' is 'bite.'
+Request satisfied: TRUE
+FINAL ANSWER: bite
+
+The system FAILED to produce the correct result. 
+Trace back through the reasoning chain to find where errors originated.
+```
+
+## Your Task
+Analyze the orchestration decision. Consider:
+1. Did the orchestrator delegate to the wrong agent?
+2. Was the plan/strategy flawed?
+3. Did it misinterpret the input information?
+4. Or was the input itself misleading?
+
+## Required Output Format:
+ATTRIBUTION: [INPUT_ERROR | ORCHESTRATION_ERROR | BOTH | NEITHER]
+SEVERITY: [HIGH | MEDIUM | LOW | NONE]
+CRITICISM: <Specific explanation of how the input or orchestration logic caused the downstream issue>
+
+
+----------------------------------------
+YOUR RESPONSE HERE:
+----------------------------------------
+
+
+================================================================================
+BACKWARD PROMPT 2
+Analyzing: Step 8 -> Step 7
+Output Node: WebSurfer (Step 8)
+Input Node: Orchestrator (Step 7)
+================================================================================
+
+You are analyzing a failure involving web search/browsing.
+
+## Context
+PROBLEM: What is the last word before the second chorus of the King of Pop's fifth single from his sixth studio album?
+GROUND TRUTH: stare
+
+## Web Operation Result (Step 8, WebSurfer)
+```
+The last word before the second chorus in Michael Jackson's song "Human Nature" is "bite." 
+The lyrics preceding the second chorus are, "Then let me take a bite."
+```
+
+Triggered by (Step 7, Orchestrator):
+```
+Updated Ledger: The lyrics are available and ready to be examined.
+Next speaker: WebSurfer
+Instruction: Please examine the lyrics to 'Human Nature' by Michael Jackson and identify the last word before the second chorus.
+```
+
+## Downstream Issue
+```
+FAILURE DETECTED
+
+The multi-agent system attempted to solve:
+What is the last word before the second chorus of the King of Pop's fifth single from his sixth studio album?
+
+Expected answer: stare
+
+Actual final output (Step 9):
+Updated Ledger: The request has been successfully addressed.
+The last word before the second chorus of 'Human Nature' is 'bite.'
+Request satisfied: TRUE
+FINAL ANSWER: bite
+
+The system FAILED to produce the correct result. 
+Trace back through the reasoning chain to find where errors originated.
+```
+
+## Your Task
+Analyze the web operation. Consider:
+1. Was the search query poorly formulated?
+2. Was the right page found but wrong information extracted?
+3. Was the search strategy itself wrong?
+4. Or was the triggering instruction misleading?
+
+## Required Output Format:
+ATTRIBUTION: [QUERY_ERROR | EXTRACTION_ERROR | STRATEGY_ERROR | TRIGGER_ERROR | NEITHER]
+SEVERITY: [HIGH | MEDIUM | LOW | NONE]
+CRITICISM: <Specific explanation>
+
+
+----------------------------------------
+YOUR RESPONSE HERE:
+----------------------------------------
+
+
+================================================================================
+BACKWARD PROMPT 3
+Analyzing: Step 7 -> Step 6
+Output Node: Orchestrator (Step 7)
+Input Node: WebSurfer (Step 6)
+================================================================================
+
+You are analyzing a failure in a multi-agent orchestration decision.
+
+## Context
+PROBLEM: What is the last word before the second chorus of the King of Pop's fifth single from his sixth studio album?
+GROUND TRUTH: stare
+
+## The Orchestrator Decision (Step 7)
+```
+Updated Ledger: The lyrics are available and ready to be examined.
+Next speaker: WebSurfer
+Instruction: Please examine the lyrics to 'Human Nature' by Michael Jackson and identify the last word before the second chorus.
+```
+
+Based on input (Step 6, WebSurfer):
+```
+I typed 'Michael Jackson 'Human Nature' lyrics' into the browser search bar.
+[Search results showing lyrics pages]
+```
+
+## Downstream Issue
+```
+FAILURE DETECTED
+
+The multi-agent system attempted to solve:
+What is the last word before the second chorus of the King of Pop's fifth single from his sixth studio album?
+
+Expected answer: stare
+
+Actual final output (Step 9):
+Updated Ledger: The request has been successfully addressed.
+The last word before the second chorus of 'Human Nature' is 'bite.'
+Request satisfied: TRUE
+FINAL ANSWER: bite
+
+The system FAILED to produce the correct result. 
+Trace back through the reasoning chain to find where errors originated.
+```
+
+## Your Task
+Analyze the orchestration decision. Consider:
+1. Did the orchestrator delegate to the wrong agent?
+2. Was the plan/strategy flawed?
+3. Did it misinterpret the input information?
+4. Or was the input itself misleading?
+
+## Required Output Format:
+ATTRIBUTION: [INPUT_ERROR | ORCHESTRATION_ERROR | BOTH | NEITHER]
+SEVERITY: [HIGH | MEDIUM | LOW | NONE]
+CRITICISM: <Specific explanation of how the input or orchestration logic caused the downstream issue>
+
+
+----------------------------------------
+YOUR RESPONSE HERE:
+----------------------------------------
+
+
+================================================================================
+BACKWARD PROMPT 4
+Analyzing: Step 6 -> Step 5
+Output Node: WebSurfer (Step 6)
+Input Node: Orchestrator (Step 5)
+================================================================================
+
+You are analyzing a failure involving web search/browsing.
+
+## Context
+PROBLEM: What is the last word before the second chorus of the King of Pop's fifth single from his sixth studio album?
+GROUND TRUTH: stare
+
+## Web Operation Result (Step 6, WebSurfer)
+```
+I typed 'Michael Jackson 'Human Nature' lyrics' into the browser search bar.
+[Search results showing lyrics pages]
+```
+
+Triggered by (Step 5, Orchestrator):
+```
+Updated Ledger: We have identified that 'Human Nature' is the fifth single from the 'Thriller' album.
+Next speaker: WebSurfer  
+Instruction: Look up the lyrics to Michael Jackson's 'Human Nature' and identify the last word before the second chorus.
+```
+
+## Downstream Issue
+```
+FAILURE DETECTED
+
+The multi-agent system attempted to solve:
+What is the last word before the second chorus of the King of Pop's fifth single from his sixth studio album?
+
+Expected answer: stare
+
+Actual final output (Step 9):
+Updated Ledger: The request has been successfully addressed.
+The last word before the second chorus of 'Human Nature' is 'bite.'
+Request satisfied: TRUE
+FINAL ANSWER: bite
+
+The system FAILED to produce the correct result. 
+Trace back through the reasoning chain to find where errors originated.
+```
+
+## Your Task
+Analyze the web operation. Consider:
+1. Was the search query poorly formulated?
+2. Was the right page found but wrong information extracted?
+3. Was the search strategy itself wrong?
+4. Or was the triggering instruction misleading?
+
+## Required Output Format:
+ATTRIBUTION: [QUERY_ERROR | EXTRACTION_ERROR | STRATEGY_ERROR | TRIGGER_ERROR | NEITHER]
+SEVERITY: [HIGH | MEDIUM | LOW | NONE]
+CRITICISM: <Specific explanation>
+
+
+----------------------------------------
+YOUR RESPONSE HERE:
+----------------------------------------
+
+
+================================================================================
+BACKWARD PROMPT 5
+Analyzing: Step 5 -> Step 4
+Output Node: Orchestrator (Step 5)
+Input Node: WebSurfer (Step 4)
+================================================================================
+
+You are analyzing a failure in a multi-agent orchestration decision.
+
+## Context
+PROBLEM: What is the last word before the second chorus of the King of Pop's fifth single from his sixth studio album?
+GROUND TRUTH: stare
+
+## The Orchestrator Decision (Step 5)
+```
+Updated Ledger: We have identified that 'Human Nature' is the fifth single from the 'Thriller' album.
+Next speaker: WebSurfer  
+Instruction: Look up the lyrics to Michael Jackson's 'Human Nature' and identify the last word before the second chorus.
+```
+
+Based on input (Step 4, WebSurfer):
+```
+I clicked 'Thriller (album) - Wikipedia'.
+The page shows singles from Thriller:
+1. "The Girl Is Mine"
+2. "Billie Jean"
+3. "Beat It"
+4. "Wanna Be Startin' Somethin'"
+5. "Human Nature"
+6. "P.Y.T. (Pretty Young Thing)"
+7. "Thriller"
+Seven singles were released from the album.
+```
+
+## Downstream Issue
+```
+FAILURE DETECTED
+
+The multi-agent system attempted to solve:
+What is the last word before the second chorus of the King of Pop's fifth single from his sixth studio album?
+
+Expected answer: stare
+
+Actual final output (Step 9):
+Updated Ledger: The request has been successfully addressed.
+The last word before the second chorus of 'Human Nature' is 'bite.'
+Request satisfied: TRUE
+FINAL ANSWER: bite
+
+The system FAILED to produce the correct result. 
+Trace back through the reasoning chain to find where errors originated.
+```
+
+## Your Task
+Analyze the orchestration decision. Consider:
+1. Did the orchestrator delegate to the wrong agent?
+2. Was the plan/strategy flawed?
+3. Did it misinterpret the input information?
+4. Or was the input itself misleading?
+
+## Required Output Format:
+ATTRIBUTION: [INPUT_ERROR | ORCHESTRATION_ERROR | BOTH | NEITHER]
+SEVERITY: [HIGH | MEDIUM | LOW | NONE]
+CRITICISM: <Specific explanation of how the input or orchestration logic caused the downstream issue>
+
+
+----------------------------------------
+YOUR RESPONSE HERE:
+----------------------------------------
+
+
+================================================================================
+BACKWARD PROMPT 6
+Analyzing: Step 4 -> Step 3
+Output Node: WebSurfer (Step 4)
+Input Node: Orchestrator (Step 3)
+================================================================================
+
+You are analyzing a failure involving web search/browsing.
+
+## Context
+PROBLEM: What is the last word before the second chorus of the King of Pop's fifth single from his sixth studio album?
+GROUND TRUTH: stare
+
+## Web Operation Result (Step 4, WebSurfer)
+```
+I clicked 'Thriller (album) - Wikipedia'.
+The page shows singles from Thriller:
+1. "The Girl Is Mine"
+2. "Billie Jean"
+3. "Beat It"
+4. "Wanna Be Startin' Somethin'"
+5. "Human Nature"
+6. "P.Y.T. (Pretty Young Thing)"
+7. "Thriller"
+Seven singles were released from the album.
+```
+
+Triggered by (Step 3, Orchestrator):
+```
+Updated Ledger: We have identified the sixth studio album as 'Thriller'.
+Next speaker: WebSurfer
+Instruction: Look up and confirm the fifth single released from Michael Jackson's 'Thriller' album.
+```
+
+## Downstream Issue
+```
+FAILURE DETECTED
+
+The multi-agent system attempted to solve:
+What is the last word before the second chorus of the King of Pop's fifth single from his sixth studio album?
+
+Expected answer: stare
+
+Actual final output (Step 9):
+Updated Ledger: The request has been successfully addressed.
+The last word before the second chorus of 'Human Nature' is 'bite.'
+Request satisfied: TRUE
+FINAL ANSWER: bite
+
+The system FAILED to produce the correct result. 
+Trace back through the reasoning chain to find where errors originated.
+```
+
+## Your Task
+Analyze the web operation. Consider:
+1. Was the search query poorly formulated?
+2. Was the right page found but wrong information extracted?
+3. Was the search strategy itself wrong?
+4. Or was the triggering instruction misleading?
+
+## Required Output Format:
+ATTRIBUTION: [QUERY_ERROR | EXTRACTION_ERROR | STRATEGY_ERROR | TRIGGER_ERROR | NEITHER]
+SEVERITY: [HIGH | MEDIUM | LOW | NONE]
+CRITICISM: <Specific explanation>
+
+
+----------------------------------------
+YOUR RESPONSE HERE:
+----------------------------------------
+
+
+================================================================================
+BACKWARD PROMPT 7
+Analyzing: Step 3 -> Step 2
+Output Node: Orchestrator (Step 3)
+Input Node: WebSurfer (Step 2)
+================================================================================
+
+You are analyzing a failure in a multi-agent orchestration decision.
+
+## Context
+PROBLEM: What is the last word before the second chorus of the King of Pop's fifth single from his sixth studio album?
+GROUND TRUTH: stare
+
+## The Orchestrator Decision (Step 3)
+```
+Updated Ledger: We have identified the sixth studio album as 'Thriller'.
+Next speaker: WebSurfer
+Instruction: Look up and confirm the fifth single released from Michael Jackson's 'Thriller' album.
+```
+
+Based on input (Step 2, WebSurfer):
+```
+I typed 'Michael Jackson sixth studio album' into the browser search bar.
+Screenshot of search results shows:
+Thriller (album) - Wikipedia
+Thriller is the sixth studio album by the American singer and songwriter Michael Jackson, released on November 29, 1982, by Epic Records.
+```
+
+## Downstream Issue
+```
+FAILURE DETECTED
+
+The multi-agent system attempted to solve:
+What is the last word before the second chorus of the King of Pop's fifth single from his sixth studio album?
+
+Expected answer: stare
+
+Actual final output (Step 9):
+Updated Ledger: The request has been successfully addressed.
+The last word before the second chorus of 'Human Nature' is 'bite.'
+Request satisfied: TRUE
+FINAL ANSWER: bite
+
+The system FAILED to produce the correct result. 
+Trace back through the reasoning chain to find where errors originated.
+```
+
+## Your Task
+Analyze the orchestration decision. Consider:
+1. Did the orchestrator delegate to the wrong agent?
+2. Was the plan/strategy flawed?
+3. Did it misinterpret the input information?
+4. Or was the input itself misleading?
+
+## Required Output Format:
+ATTRIBUTION: [INPUT_ERROR | ORCHESTRATION_ERROR | BOTH | NEITHER]
+SEVERITY: [HIGH | MEDIUM | LOW | NONE]
+CRITICISM: <Specific explanation of how the input or orchestration logic caused the downstream issue>
+
+
+----------------------------------------
+YOUR RESPONSE HERE:
+----------------------------------------
+
+
+================================================================================
+BACKWARD PROMPT 8
+Analyzing: Step 2 -> Step 1
+Output Node: WebSurfer (Step 2)
+Input Node: Orchestrator (Step 1)
+================================================================================
+
+You are analyzing a failure involving web search/browsing.
+
+## Context
+PROBLEM: What is the last word before the second chorus of the King of Pop's fifth single from his sixth studio album?
+GROUND TRUTH: stare
+
+## Web Operation Result (Step 2, WebSurfer)
+```
+I typed 'Michael Jackson sixth studio album' into the browser search bar.
+Screenshot of search results shows:
+Thriller (album) - Wikipedia
+Thriller is the sixth studio album by the American singer and songwriter Michael Jackson, released on November 29, 1982, by Epic Records.
+```
+
+Triggered by (Step 1, Orchestrator):
+```
+Updated Ledger: The initial step of confirming Michael Jackson's sixth studio album has not been completed yet.
+Next speaker: WebSurfer
+Instruction: Please look up and confirm the sixth studio album of Michael Jackson.
+```
+
+## Downstream Issue
+```
+FAILURE DETECTED
+
+The multi-agent system attempted to solve:
+What is the last word before the second chorus of the King of Pop's fifth single from his sixth studio album?
+
+Expected answer: stare
+
+Actual final output (Step 9):
+Updated Ledger: The request has been successfully addressed.
+The last word before the second chorus of 'Human Nature' is 'bite.'
+Request satisfied: TRUE
+FINAL ANSWER: bite
+
+The system FAILED to produce the correct result. 
+Trace back through the reasoning chain to find where errors originated.
+```
+
+## Your Task
+Analyze the web operation. Consider:
+1. Was the search query poorly formulated?
+2. Was the right page found but wrong information extracted?
+3. Was the search strategy itself wrong?
+4. Or was the triggering instruction misleading?
+
+## Required Output Format:
+ATTRIBUTION: [QUERY_ERROR | EXTRACTION_ERROR | STRATEGY_ERROR | TRIGGER_ERROR | NEITHER]
+SEVERITY: [HIGH | MEDIUM | LOW | NONE]
+CRITICISM: <Specific explanation>
+
+
+----------------------------------------
+YOUR RESPONSE HERE:
+----------------------------------------
+
+
+================================================================================
+BACKWARD PROMPT 9
+Analyzing: Step 1 -> Step 0
+Output Node: Orchestrator (Step 1)
+Input Node: Orchestrator (Step 0)
+================================================================================
+
+You are analyzing a failure in a multi-agent orchestration decision.
+
+## Context
+PROBLEM: What is the last word before the second chorus of the King of Pop's fifth single from his sixth studio album?
+GROUND TRUTH: stare
+
+## The Orchestrator Decision (Step 1)
+```
+Updated Ledger: The initial step of confirming Michael Jackson's sixth studio album has not been completed yet.
+Next speaker: WebSurfer
+Instruction: Please look up and confirm the sixth studio album of Michael Jackson.
+```
+
+Based on input (Step 0, Orchestrator):
+```
+Initial plan:
+We are working to address the following user request:
+What is the last word before the second chorus of the King of Pop's fifth single from his sixth studio album?
+
+Here is the plan to follow:
+1. Identify the King of Pop's (Michael Jackson's) sixth studio album.
+2. Determine the fifth single released from that album.
+3. Retrieve the lyrics of the fifth single to find the last word before the second chorus.
+4. Identify the last word before the second chorus from the lyrics.
+```
+
+## Downstream Issue
+```
+FAILURE DETECTED
+
+The multi-agent system attempted to solve:
+What is the last word before the second chorus of the King of Pop's fifth single from his sixth studio album?
+
+Expected answer: stare
+
+Actual final output (Step 9):
+Updated Ledger: The request has been successfully addressed.
+The last word before the second chorus of 'Human Nature' is 'bite.'
+Request satisfied: TRUE
+FINAL ANSWER: bite
+
+The system FAILED to produce the correct result. 
+Trace back through the reasoning chain to find where errors originated.
+```
+
+## Your Task
+Analyze the orchestration decision. Consider:
+1. Did the orchestrator delegate to the wrong agent?
+2. Was the plan/strategy flawed?
+3. Did it misinterpret the input information?
+4. Or was the input itself misleading?
+
+## Required Output Format:
+ATTRIBUTION: [INPUT_ERROR | ORCHESTRATION_ERROR | BOTH | NEITHER]
+SEVERITY: [HIGH | MEDIUM | LOW | NONE]
+CRITICISM: <Specific explanation of how the input or orchestration logic caused the downstream issue>
+
+
+----------------------------------------
+YOUR RESPONSE HERE:
+----------------------------------------
+
+

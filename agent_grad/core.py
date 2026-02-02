@@ -13,8 +13,6 @@ Key concepts:
 
 from dataclasses import dataclass, field
 from typing import List, Dict, Set, Optional, Any, Callable
-from abc import ABC, abstractmethod
-from ops import build_generic_prompt
 
 
 # ============================================================
@@ -35,14 +33,17 @@ class Tensor:
     value: str
     role: str = ""
     step_idx: int = 0
+    requires_grad: bool = True
     
-    # Gradient accumulation
+    # Gradient accumulation (list of criticism strings)
     grad: List[str] = field(default_factory=list)
     suspicion_score: float = 0.0
+    attribution: List[str] = field(default_factory=list)
     
-    # Graph structure
+    # Graph structure (like simplegrad)
     _prev: Set['Tensor'] = field(default_factory=set)
-    _op_name: str = "generic"  # Operation type that produced this
+    _backward: Callable = field(default=lambda: None)
+    _op_name: str = ""  # Operation type that produced this
     
     def __hash__(self):
         return id(self)
@@ -54,30 +55,37 @@ class Tensor:
     def short_str(self):
         """Short representation for prompts."""
         return f"[Step {self.step_idx}] {self.role}: {self.value[:200]}..."
-
-def get_backward_template(role):
-    return build_generic_prompt
-
-# def get_backward_template(role: str) -> str:
-#     """Get the appropriate backward template for an agent role."""
-#     role_lower = role.lower()
     
-#     # Match by keywords
-#     if "orchestrat" in role_lower or "planner" in role_lower:
-#         return BACKWARD_TEMPLATES["orchestrator"]
-#     elif "web" in role_lower or "surf" in role_lower or "browse" in role_lower:
-#         return BACKWARD_TEMPLATES["websurfer"]
-#     elif "code" in role_lower or "terminal" in role_lower or "computer" in role_lower:
-#         return BACKWARD_TEMPLATES["coder"]
-#     elif "assistant" in role_lower:
-#         return BACKWARD_TEMPLATES["assistant"]
-#     else:
-#         return BACKWARD_TEMPLATES["generic"]
-
-
-# def register_backward_template(key: str, template: str):
-#     """Register a custom backward template."""
-#     BACKWARD_TEMPLATES[key.lower()] = template
+    def backward(self, initial_grad: str = None):
+        """
+        Perform backward pass through the computation graph.
+        Like simplegrad's backward(), but with textual gradients.
+        
+        Args:
+            initial_grad: The starting criticism (if None, uses default loss message)
+        """
+        # Build topological order
+        topo = []
+        visited = set()
+        
+        def build_topo(node):
+            if node not in visited:
+                visited.add(node)
+                for prev in node._prev:
+                    build_topo(prev)
+                topo.append(node)
+        
+        build_topo(self)
+        
+        # Initialize this node's gradient if not already set
+        if initial_grad is not None:
+            self.grad.append(initial_grad)
+        elif not self.grad:
+            self.grad.append("This output was incorrect and needs analysis.")
+        
+        # Backward pass in reverse topological order
+        for tensor in reversed(topo):
+            tensor._backward()
 
 
 # ============================================================
@@ -150,58 +158,93 @@ class Graph:
                 dfs(n)
         
         return order
-    
-    def linearize(self, initial_criticism: str) -> List[Dict[str, Any]]:
+
+    def linearize(self, initial_grad: str = None) -> List[Dict[str, Any]]:
         """
-        Linearize backward pass into a list of prompt templates.
+        Linearize the backward pass into a list of prompt templates.
         
-        This is the key function: it returns prompts you can run manually
-        or feed to an LLM to perform textual backpropagation.
+        Instead of recursively calling _backward(), this returns a list
+        of templates that can be executed sequentially with an LLM.
         
         Args:
-            initial_criticism: The starting "gradient" - why the final output failed
+            initial_grad: The starting criticism for the loss node
         
         Returns:
-            List of dicts with keys:
-                - 'prompt': The complete prompt to send to LLM
+            List of dicts, each containing:
+                - 'prompt_template': The prompt with {downstream_grad} placeholder
                 - 'output_node': The node whose output is being analyzed
-                - 'input_node': The node whose contribution is being assessed
-                - 'step_idx': Step index of the input node
-        """
-        topo = self._toposort()
-        backward_order = list(reversed(topo))  # Process from loss backward
+                - 'input_nodes': List of input nodes to receive gradients
+                - 'format_fn': Function to format the prompt with a gradient string
         
-        # Initialize loss node's gradient
-        loss = self.get_loss()
-        if loss:
-            loss.grad.append(initial_criticism)
+        Usage:
+            templates = graph.linearize(initial_criticism)
+            gradient = initial_criticism
+            for t in templates:
+                prompt = t['format_fn'](gradient)
+                response = llm(prompt)
+                gradient = parse_and_update(response, t['input_nodes'])
+        """
+        from . import ops
+        
+        topo = self._toposort()
+        backward_order = list(reversed(topo))
         
         templates = []
         
         for node in backward_order:
+            # Skip nodes with no predecessors (nothing to backprop to)
             if not node._prev:
-                continue  # Root node, nothing to backprop to
+                continue
             
-            # Aggregate all gradients received so far
-            # downstream_grad = "\n---\n".join(node.grad) if node.grad else initial_criticism
-            downstream_grad = "\n---\n".join(node.grad) if node.grad else "{downstream_grad}"
-            template_func = get_backward_template(node.role)
-            inputs = [(p.role, p.step_idx, p.value) for p in node._prev]
-            prompt = template_func(
+            # Build input info
+            input_nodes = list(node._prev)
+            input_info = [(inp.role, inp.step_idx, inp.value) for inp in input_nodes]
+            
+            # Get the template builder for this node's role
+            template_builder = ops.get_backward_template(node.role)
+            
+            # Create a format function that takes downstream_grad and returns the full prompt
+            def make_format_fn(builder, prob, gt, out_role, out_idx, out_val, inputs):
+                def format_fn(downstream_grad: str) -> str:
+                    return builder(
+                        problem=prob,
+                        ground_truth=gt,
+                        output_role=out_role,
+                        output_idx=out_idx,
+                        output_value=out_val,
+                        inputs=inputs,
+                        downstream_grad=downstream_grad,
+                    )
+                return format_fn
+            
+            format_fn = make_format_fn(
+                template_builder,
+                self.problem,
+                self.ground_truth,
+                node.role,
+                node.step_idx,
+                node.value,
+                input_info,
+            )
+            
+            # Also create the template with placeholder for inspection
+            prompt_template = template_builder(
                 problem=self.problem,
                 ground_truth=self.ground_truth,
-                output_value=node.value,
                 output_role=node.role,
                 output_idx=node.step_idx,
-                inputs=inputs,
-                downstream_grad=downstream_grad,
+                output_value=node.value,
+                inputs=input_info,
+                downstream_grad="{downstream_grad}",
             )
+            
             templates.append({
-                'prompt': prompt,
+                'prompt_template': prompt_template,
+                'format_fn': format_fn,
                 'output_node': node,
                 'output_idx': node.step_idx,
-                'input_nodes': node._prev,
-                'input_idxs': (p.step_idx for p in node._prev)
+                'input_nodes': input_nodes,
+                'input_info': input_info,
             })
         
         return templates
@@ -232,10 +275,20 @@ Trace back through the reasoning chain to find where errors originated."""
 # ============================================================
 # RESPONSE PARSING & SCORING
 # ============================================================
-def parse_response(response: str) -> Dict[str, Any]:
-    """Parse LLM response to extract attribution, severity, criticism."""
+def parse_response(response: str, inputs: List = None) -> Dict[str, Any]:
+    """
+    Parse LLM response to extract attribution, severity, criticism.
+    
+    If inputs is provided, parse multi-input format.
+    Otherwise, parse single-input format.
+    """
     import re
     
+    if inputs is not None:
+        # Multi-input parsing
+        return _parse_multi_input_response(response, inputs)
+    
+    # Single-input parsing (legacy)
     result = {
         'attribution': 'UNKNOWN',
         'severity': 'UNKNOWN',
@@ -263,75 +316,55 @@ def parse_response(response: str) -> Dict[str, Any]:
     return result
 
 
-# ============================================================
-# BACKWARD EXECUTOR
-# ============================================================
-class BackwardExecutor:
+def _parse_multi_input_response(response: str, inputs: List) -> Dict[int, Dict[str, Any]]:
     """
-    Execute backward pass using an LLM.
+    Parse LLM response that contains gradients for multiple inputs.
     
-    Usage:
-        executor = BackwardExecutor(llm_fn=my_llm_function)
-        results = executor.run(graph, initial_loss)
-        ranked = executor.rank_nodes(graph)
+    Returns:
+        dict mapping input_idx -> {attribution, severity, severity_score, criticism}
     """
+    import re
     
-    def __init__(self, llm_fn: Callable[[str], str]):
-        """
-        Args:
-            llm_fn: Function that takes prompt string, returns LLM response string
-        """
-        self.llm_fn = llm_fn
+    results = {}
+    severity_map = {'HIGH': 1.0, 'MEDIUM': 0.6, 'LOW': 0.3, 'NONE': 0.0}
     
-    def run(self, graph: Graph, initial_criticism: str) -> List[Dict]:
-        """
-        Run backward pass, accumulating gradients and scores.
+    for (input_role, input_idx, input_value) in inputs:
+        # Find the section for this input
+        pattern = rf"###\s*GRADIENT\s+FOR\s+STEP\s+{input_idx}.*?(?=###\s*GRADIENT|$)"
+        match = re.search(pattern, response, re.DOTALL | re.IGNORECASE)
         
-        Returns:
-            List of results for each backward step
-        """
-        templates = graph.linearize(initial_criticism)
-        results = []
-        
-        for item in templates:
-            prompt = item['prompt']
-            input_node = item['input_node']
+        if match:
+            section = match.group(0)
             
-            # Call LLM
-            response = self.llm_fn(prompt)
+            # Extract attribution
+            attr_match = re.search(r'ATTRIBUTION:\s*\[?([A-Z_]+)\]?', section.upper())
+            attribution = attr_match.group(1) if attr_match else 'UNKNOWN'
             
-            # Parse
-            parsed = parse_response(response)
+            # Extract severity
+            sev_match = re.search(r'SEVERITY:\s*\[?([A-Z]+)\]?', section.upper())
+            severity = sev_match.group(1) if sev_match else 'UNKNOWN'
+            severity_score = severity_map.get(severity, 0.0)
             
-            # Accumulate gradient to input node
-            input_node.grad.append(parsed['criticism'])
-            input_node.suspicion_score += parsed['severity_score']
+            # Extract criticism
+            crit_match = re.search(r'CRITICISM:\s*(.+?)(?=\n\n|###|$)', section, re.DOTALL)
+            criticism = crit_match.group(1).strip() if crit_match else section
             
-            results.append({
-                **item,
-                'response': response,
-                'parsed': parsed,
-            })
-        
-        return results
-    
-    def rank_nodes(self, graph: Graph) -> List[Tensor]:
-        """Rank nodes by suspicion score (highest first)."""
-        return sorted(graph.nodes, key=lambda n: n.suspicion_score, reverse=True)
-    
-    def get_top_suspects(self, graph: Graph, k: int = 3) -> List[Dict]:
-        """Get top k suspected error nodes with details."""
-        ranked = self.rank_nodes(graph)[:k]
-        return [
-            {
-                'step_idx': n.step_idx,
-                'role': n.role,
-                'score': n.suspicion_score,
-                'gradients': n.grad,
-                'value_preview': n.value[:200] + '...' if len(n.value) > 200 else n.value,
+            results[input_idx] = {
+                'attribution': attribution,
+                'severity': severity,
+                'severity_score': severity_score,
+                'criticism': criticism,
             }
-            for n in ranked
-        ]
+        else:
+            # Fallback if section not found
+            results[input_idx] = {
+                'attribution': 'UNKNOWN',
+                'severity': 'UNKNOWN', 
+                'severity_score': 0.0,
+                'criticism': f'Could not parse gradient for step {input_idx}',
+            }
+    
+    return results
 
 
 # ============================================================

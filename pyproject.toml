@@ -1,0 +1,10 @@
+[project]
+name = "agent-grad"
+version = "0.1.0"
+description = "TextGrad for Multi-Agent System Failure Attribution"
+requires-python = ">=3.9"
+dependencies = []
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
