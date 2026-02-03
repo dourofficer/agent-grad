@@ -1,0 +1,68 @@
+python get_prompts.py \
+    --method all_at_once \
+    --model gpt-4o \
+    --is_handcrafted False \
+    --directory_path "./data/who-and-when/Algorithm-Generated"
+
+python get_prompts.py \
+    --method all_at_once \ # or build_ifg
+    --model gpt-4o \
+    --is_handcrafted True \
+    --directory_path "./data/who-and-when/Hand-Crafted"
+
+python get_prompts.py \
+    --method text_grad \
+    --model gpt-4o \
+    --is_handcrafted False \
+    --directory_path "./data/who-and-when/Algorithm-Generated"
+
+python get_prompts.py \
+    --method text_grad
+    --model gpt-4o \
+    --is_handcrafted True \
+    --directory_path "./data/who-and-when/Hand-Crafted"
+```
+from Lib.new_utils import mdprint
+import json
+data = json.load(open("prompt_outputs/prompts_all_at_once_gpt-4o_handcrafted.json"))
+prompts = [x["messages"][1]["content"] for x in data["prompts"]]
+labels = [x["labels"] for x in data["prompts"]]
+steps = [x["chat_history"] for x in data["prompts"]]
+mdprint(prompts[0])
+```
+
+```
+from Lib.new_utils import mdprint
+import json
+data = json.load(open("prompt_outputs/prompts_text_grad_gpt-4o_alg_generated.json"))
+prompts = [x["messages"][1]["content"] for x in data["prompts"]]
+labels = [x["labels"] for x in data["prompts"]]
+
+file_to_prompts = {}
+for entry in data["prompts"]:
+    if file_to_prompts.get(entry["file"]) is None:
+        file_to_prompts[entry["file"]] = []
+    file_to_prompts[entry["file"]].append(entry)
+grouped_prompts = [v for k, v in file_to_prompts.items()]
+
+entry_idx = 10
+example = grouped_prompts[entry_idx]
+error_idx = int(example[0]['labels']['mistake_step'])
+step = example[error_idx]
+step_prompt = step["messages"][1]["content"]
+
+mdprint(step_prompt)
+```
+
+```
+i = 2
+label = labels[i]
+mistake_step = int(label['mistake_step'])
+step = steps[i][mistake_step]['content']
+label, mdprint(step)
+```
+
+
+```
+python inference.py --config gpt-oss-20b.yaml --method step_by_step --directory_path "../data/who-and-when/Algorithm-Generated/" --is_handcrafted False
+```

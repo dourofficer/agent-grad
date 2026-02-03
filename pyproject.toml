@@ -3,7 +3,11 @@ name = "agent-grad"
 version = "0.1.0"
 description = "TextGrad for Multi-Agent System Failure Attribution"
 requires-python = ">=3.9"
-dependencies = []
+dependencies = [
+    "dotenv>=0.9.9",
+    "rich>=14.3.2",
+    "tqdm>=4.67.2",
+]
 
 [build-system]
 requires = ["hatchling"]

@@ -21,3 +21,14 @@ week 2:
     [ ] (main) backbrop textual grad: LLM(steps[i], steps[i+1], steps[i+1].grad) -> steps[i].grad
 [ ] analyze failure modes.
 
+curl -X POST http://localhost:8881/v1/chat/completions \
+    -H "Content-Type: application/json" \
+    -d '{
+        "model": "openai/gpt-oss-20b",
+        "messages": [
+            {"role": "user", "content": "What are the applications of LLMs in biology research?"}
+        ],
+        "max_tokens": 1000,
+        "temperature": 0.9,
+        "reasoning_effort": "high"
+    }'

@@ -3,4 +3,4 @@ export REPO_NAME="dourofficer/agent-grad"
 
 git config --local user.name "dourofficer"
 git config --local user.email "dourofficer@gmail.com"
-git remote set-url origin https://staticpunch:${GITHUB_TOKEN}j@github.com/${REPO_NAME}.git
+git remote set-url origin https://staticpunch:${GITHUB_TOKEN}@github.com/${REPO_NAME}.git
