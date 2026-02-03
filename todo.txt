@@ -1,0 +1,23 @@
+project: textual gradient for failure attribution
+
+week 1:
+[x] implement a basic version of textual autograd engine.
+[x] manually construct graph for 5 samples in who&when dataset.
+[x] run backward with simple trajectories (alg-generated subset in who&when)
+    -> textual gradients kinda make sense.
+
+week 2:
+[ ] choose benchmarks.
+    [ ] aggregate bechmarks from every paper: who&when, aegis, agentracer, etc.
+    [ ] choose 50-100 highest quality samples
+[ ] code evaluation. need to choose metrics.
+[ ] run baselines:
+    [ ] all-at-once: LLM(traj) -> which (agent, step) is responsible?
+    [ ] step-by-step: LLM(traj, steps[i]) -> is this step i-th responsible?
+[ ] (IMPORTANT) think of a scoring mechanisms
+[ ] run prototypes:
+    [ ] construct graphs for all evaluation samples.
+    [ ] naive textual grad: LLM(traj, steps[i], loss) -> steps[i].grad = how steps[i] contributed to error?
+    [ ] (main) backbrop textual grad: LLM(steps[i], steps[i+1], steps[i+1].grad) -> steps[i].grad
+[ ] analyze failure modes.
+
