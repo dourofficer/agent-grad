@@ -8,12 +8,22 @@ week 1:
 
 week 2:
 [ ] choose benchmarks.
-    [ ] aggregate bechmarks from every paper: who&when, aegis, agentracer, etc.
+    [-] aggregate bechmarks from every paper: who&when, aegis, agentracer, etc.
+        note: partly done, only worked with who&when.
     [ ] choose 50-100 highest quality samples
-[ ] code evaluation. need to choose metrics.
-[ ] run baselines:
-    [ ] all-at-once: LLM(traj) -> which (agent, step) is responsible?
-    [ ] step-by-step: LLM(traj, steps[i]) -> is this step i-th responsible?
+[-] code evaluation. need to choose metrics.
+    note: have done measuring accuracy.
+[x] run baselines with GPT-OSS-20B:
+    [x] all-at-once: LLM(traj) -> which (agent, step) is responsible?
+    [x] step-by-step: LLM(traj, steps[i]) -> is this step i-th responsible?
+   ┌────────────────────────────────────────────────────────────────┐
+   │          method         subset  agent_accuracy  step_accuracy  │
+   │ 0  step_by_step  alg_generated       40.476190      24.603175  │ 
+   │ 1  step_by_step    handcrafted       18.965517       8.620690  │
+   │ 2   all_at_once  alg_generated       62.698413       7.936508  │
+   │ 3   all_at_once    handcrafted       29.310345       5.172414  │
+   └────────────────────────────────────────────────────────────────┘
+
 [ ] (IMPORTANT) think of a scoring mechanisms
 [ ] run prototypes:
     [ ] construct graphs for all evaluation samples.

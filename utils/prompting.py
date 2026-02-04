@@ -15,6 +15,7 @@ def parse_llm_json_output(response_text):
     Parses a JSON response from an LLM, handling Markdown code blocks 
     and common formatting issues.
     """
+    if response_text is None: return {}
     try:
         # Strip whitespace
         text = response_text.strip()
@@ -38,7 +39,7 @@ def parse_llm_json_output(response_text):
         except:
             pass
         print(f"Failed to parse JSON response: {response_text[:100]}...")
-        return None
+        return {}
 
 def _get_sorted_json_files(directory_path):
     """Gets and sorts JSON files numerically from a directory."""

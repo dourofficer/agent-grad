@@ -64,5 +64,9 @@ label, mdprint(step)
 
 
 ```
-python inference.py --config gpt-oss-20b.yaml --method step_by_step --directory_path "../data/who-and-when/Algorithm-Generated/" --is_handcrafted False
+python -m utils.inference --config utils/gpt-oss-20b.yaml --method step_by_step --directory_path "data/who-and-when/Algorithm-Generated/" --is_handcrafted False
+python -m utils.inference --config utils/gpt-oss-20b.yaml --method all_at_once --directory_path "data/who-and-when/Algorithm-Generated/" --is_handcrafted False
+
+python -m utils.inference --config utils/gpt-oss-20b.yaml --method step_by_step --directory_path "data/who-and-when/Hand-Crafted/" --is_handcrafted True
+python -m utils.inference --config utils/gpt-oss-20b.yaml --method all_at_once --directory_path "data/who-and-when/Hand-Crafted/" --is_handcrafted True
 ```

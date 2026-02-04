@@ -52,7 +52,7 @@ def unflatten(responses_data):
             "messages": entry.get("messages"),
             "reasoning": entry.get("reasoning"),
             "response": entry.get("response"),
-            "parsed": parse_llm_json_output(entry.get("response"))
+            # "parsed": parse_llm_json_output(entry.get("response"))
         })
     unflattened = [v for k, v in unflattened.items()]
     return unflattened
@@ -106,13 +106,13 @@ def main():
     # Setup output
     output_dir = "outputs/prompts"
     os.makedirs(output_dir, exist_ok=True)
-    handcrafted_suffix = "_handcrafted" if is_handcrafted_bool else "_alg_generated"
+    handcrafted_suffix = "handcrafted" if is_handcrafted_bool else "alg_generated"
     output_filename = f"{args.method}-{handcrafted_suffix}.json"
     output_filepath = os.path.join(output_dir, output_filename)
 
     responses_dir = "outputs/responses"
     os.makedirs(responses_dir, exist_ok=True)
-    handcrafted_suffix = "_handcrafted" if is_handcrafted_bool else "_alg_generated"
+    handcrafted_suffix = "handcrafted" if is_handcrafted_bool else "alg_generated"
     responses_filename = f"{args.method}-{handcrafted_suffix}.json"
     responses_filepath = os.path.join(responses_dir, responses_filename)
 
