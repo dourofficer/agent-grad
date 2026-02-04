@@ -1,4 +1,4 @@
-project: textual gradient for failure attribution
+project: `agent-grad` - textual gradient for failure attribution
 
 week 1:
 [x] implement a basic version of textual autograd engine.
@@ -12,33 +12,34 @@ week 2:
         note: partly done, only worked with who&when.
     [ ] choose 50-100 highest quality samples
 [-] code evaluation. need to choose metrics.
-    note: have done measuring accuracy.
+    [x] code evaluate accuracy  : correct += (label == prediction)
+    [ ] a more forgiving metrics: correct += (label in predictions)
 [x] run baselines with GPT-OSS-20B:
     [x] all-at-once: LLM(traj) -> which (agent, step) is responsible?
     [x] step-by-step: LLM(traj, steps[i]) -> is this step i-th responsible?
-   ┌────────────────────────────────────────────────────────────────┐
-   │          method         subset  agent_accuracy  step_accuracy  │
-   │ 0  step_by_step  alg_generated       40.476190      24.603175  │ 
-   │ 1  step_by_step    handcrafted       18.965517       8.620690  │
-   │ 2   all_at_once  alg_generated       62.698413       7.936508  │
-   │ 3   all_at_once    handcrafted       29.310345       5.172414  │
-   └────────────────────────────────────────────────────────────────┘
+    [x] naive text-grad: 
+        [x] run LLM(traj, idx, loss) -> how steps[idx] contributed to error?
+        [x] evaluate: check if `mistake_step` in error steps identified by text-grad.
+            ```
+            error_steps = [step['attribution'] == 'INPUT_ERROR' for step in steps]
+            score += (entry['mistake_step'] in error_steps)
+            ```
+        -------------------------------------------------------------
+                 method         subset  agent_accuracy  step_accuracy
+        0  step_by_step  alg_generated       40.476190      24.603175
+        1  step_by_step    handcrafted       18.965517       8.620690
+        2   all_at_once  alg_generated       62.698413       7.936508
+        3   all_at_once    handcrafted       29.310345       5.172414
+        4     text_grad  alg_generated       50.000000      30.952381
+        5     text_grad    handcrafted       12.068966       3.448276
+        -------------------------------------------------------------
+        
+        note: text_grad looks terrible.
 
+[ ] analyze failure modes of naive text-grad
+    compare explanation by model & by annotator(s) in failed cases.
 [ ] (IMPORTANT) think of a scoring mechanisms
-[ ] run prototypes:
+[ ] run prototypes for `agent-grad`:
     [ ] construct graphs for all evaluation samples.
-    [ ] naive textual grad: LLM(traj, steps[i], loss) -> steps[i].grad = how steps[i] contributed to error?
-    [ ] (main) backbrop textual grad: LLM(steps[i], steps[i+1], steps[i+1].grad) -> steps[i].grad
-[ ] analyze failure modes.
-
-curl -X POST http://localhost:8881/v1/chat/completions \
-    -H "Content-Type: application/json" \
-    -d '{
-        "model": "openai/gpt-oss-20b",
-        "messages": [
-            {"role": "user", "content": "What are the applications of LLMs in biology research?"}
-        ],
-        "max_tokens": 1000,
-        "temperature": 0.9,
-        "reasoning_effort": "high"
-    }'
+    [ ] (main) backbrop textual grad: 
+        LLM(steps[i], steps[i+1], steps[i+1].grad) -> steps[i].grad

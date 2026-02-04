@@ -69,4 +69,40 @@ python -m utils.inference --config utils/gpt-oss-20b.yaml --method all_at_once -
 
 python -m utils.inference --config utils/gpt-oss-20b.yaml --method step_by_step --directory_path "data/who-and-when/Hand-Crafted/" --is_handcrafted True
 python -m utils.inference --config utils/gpt-oss-20b.yaml --method all_at_once --directory_path "data/who-and-when/Hand-Crafted/" --is_handcrafted True
+
+python -m utils.inference \
+    --config utils/gpt-oss-20b.yaml \
+    --method text_grad \
+    --input "./data/who-and-when/Algorithm-Generated/" \
+    --output "./outputs/gpt-oss-20b/"
+
+python -m utils.inference \
+    --config utils/gpt-oss-20b.yaml \
+    --method text_grad \
+    --input "./data/who-and-when/Hand-Crafted/" \
+    --output "./outputs/gpt-oss-20b/"
+```
+
+```
+CUDA_VISIBLE_DEVICES=2 vllm serve openai/gpt-oss-20b \
+    --port 8882 \
+    --gpu-memory-utilization 0.90 \
+    --tensor-parallel-size 1 \
+    --disable-log-requests \
+    --max-model-len 32000 \
+    --max-num-batched-tokens 16000 \
+    --generation-config auto
+
+
+curl -X POST http://localhost:8881/v1/chat/completions \
+    -H "Content-Type: application/json" \
+    -d '{
+        "model": "openai/gpt-oss-20b",
+        "messages": [
+            {"role": "user", "content": "What are the applications of LLMs in biology research?"}
+        ],
+        "max_tokens": 1000,
+        "temperature": 0.9,
+        "reasoning_effort": "high"
+    }'
 ```

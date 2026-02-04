@@ -10,15 +10,11 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 def send_request(url, pload_config, data, request_id):
     """Sends a single request to the vLLM server."""
     headers = {"Content-Type": "application/json"}
-    # prompt = data.get("prompt")
     messages = data.get("messages")
     
     pload = {
         **pload_config,
         "messages": messages,
-        # "messages": [
-        #     {"role": "user", "content": prompt}
-        # ],
         "stream": False
     }
 
@@ -46,7 +42,6 @@ def send_request(url, pload_config, data, request_id):
         error_entry = (request_id, str(e))
         result_entry = {
             "request_id": request_id,
-            # "prompt": prompt,
             "messages": messages,
             "response": None,
             **data
@@ -120,4 +115,4 @@ if __name__ == "__main__":
     parser.add_argument("--results-file", type=str, required=True, help="Output file for results (JSONL)")
     args = parser.parse_args()
 
-    run_inference(args.config, args.input_file, args.results_file)
+    run_inference_e2e(args.config, args.input_file, args.results_file)

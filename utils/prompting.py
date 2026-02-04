@@ -295,27 +295,32 @@ def get_prompts_textual_grad(directory_path, is_handcrafted, model_type=None):
         ])
         
         TASK_TEMPLATE = (
-            "**Classification Guide**:\n\n"
-            "- **INPUT_ERROR**: This step contains the ORIGINAL mistake. The error was created HERE, not inherited from previous steps. If this step were fixed, downstream failures would likely be prevented.\n"
-            "- **PROCESSING_ERROR**: This step propagated an error from an EARLIER step. The mistake already existed before this step, and while this step failed to catch it, it did not originate the error.\n"
+            "**ATTRIBUTION Guide**:\n"
+            "- **ORIGINATING_ERROR**: This step contains the ORIGINAL mistake. The error was created HERE, not inherited from previous steps. If this step were fixed, downstream failures would likely be prevented.\n"
+            "- **PROPAGATING_ERROR**: This step propagated an error from an EARLIER step. The mistake already existed before this step, and while this step failed to catch it, it did not originate the error.\n"
             "- **NEITHER**: This step is correct, or the error was introduced in later steps.\n\n"
-            "**CRITICISM Guide**:\n"
-            "- If you determine this step is an error, explain specifically how it should be changed to maximize the correctness of the trajectory.\n\n"
-            "## Required Output Format:\n"
-            "Your response must be a valid JSON object with the following keys:\n"
-            "1. \"attribution\": string (\"INPUT_ERROR\", \"PROCESSING_ERROR\", or \"NEITHER\")\n"
-            "2. \"criticism\": string (One paragraph explaining how STEP {input_idx} contributed to the problem, or why it didn't.)"
+            "**CRITICISM GUIDE**:\n"
+            "Provide a one-paragraph analysis based on your attribution:\n"
+            "- If **Error**: Explicitly state explaining how STEP {input_idx} contributed to the problem and how it should be changed to maximize the correctness of the trajectory.\n"
+            "- If **Neither**: Briefly explain why the step validates as correct.\n\n"
+            "**Output Format**:\n"
+            "Respond strictly with a valid JSON object:\n"
+            "{{\n"
+            "  \"attribution\": \"ORIGINATING_ERROR\" | \"PROPAGATING_ERROR\" | \"NEITHER\",\n"
+            "  \"criticism\": \"Your explanation here...\"\n"
+            "}}"
         )
         
         step_prompts = []
         for idx, entry in enumerate(chat_history):
             task = TASK_TEMPLATE.format(input_idx=idx)
             prompt = (
-                "You are an AI assistant tasked with analyzing a multi-agent conversation history generated during the resolution of a complex problem.\n"
+                "You are an AI assistant tasked with analyzing a multi-agent conversation history (trajectory) generated during the resolution of a complex problem.\n"
                 f"The Problem: {problem}\n"
                 f"The Ground Truth Answer: {ground_truth}\n\n"
                 f"Here is the conversation:\n\n{chat_content}\n\n" 
-                f"Task: Analyze how STEP {idx} (performed by {entry.get(index_agent)}) contributed to the failure of the final output.\n\n"
+                f"Task: Analyze how STEP {idx} (performed by {entry.get(index_agent)}) contributed to the failure of the final output. "
+                f"\n\n"
                 f"{task}"
             )
             system_message = "You are a helpful assistant skilled in analyzing conversations. You always respond in valid JSON format."

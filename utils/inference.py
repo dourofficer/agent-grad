@@ -3,6 +3,7 @@ import argparse
 import sys
 import json
 import datetime
+from pathlib import Path
 from dotenv import load_dotenv
 
 # Import the new utils functions
@@ -38,7 +39,7 @@ def unflatten(responses_data):
     unflattened = {}
     for entry in responses_data:
         filename = entry.get("file")
-        if unflattened.get(filename) is None:
+        if filename not in unflattened:
             unflattened[filename] = {
                 "file": filename,
                 "method": entry.get("method"),
@@ -54,15 +55,33 @@ def unflatten(responses_data):
             "response": entry.get("response"),
             # "parsed": parse_llm_json_output(entry.get("response"))
         })
-    unflattened = [v for k, v in unflattened.items()]
-    return unflattened
+    return list(unflattened.values())
+
+def is_handcrafted_from_path(directory_path):
+    """Derive whether data is handcrafted from the directory path."""
+    path_lower = directory_path.lower()
+    if "hand-crafted" in path_lower or "handcrafted" in path_lower:
+        return True
+    elif "algorithm-generated" in path_lower or "alg_generated" in path_lower:
+        return False
+    else:
+        raise ValueError(
+            f"Cannot determine if data is handcrafted from path: {directory_path}. "
+            "Path should contain 'Hand-Crafted' or 'Algorithm-Generated'."
+        )
+
+def get_output_filepath(base_dir, method, is_handcrafted):
+    """Generate output filepath with consistent naming."""
+    os.makedirs(base_dir, exist_ok=True)
+    handcrafted_suffix = "handcrafted" if is_handcrafted else "alg_generated"
+    filename = f"{method}-{handcrafted_suffix}.json"
+    return os.path.join(base_dir, filename)
 
 def main():
     load_dotenv()
 
     parser = argparse.ArgumentParser()
 
-    # Replicate exact arguments from inference.py
     parser.add_argument(
         "--method",
         type=str,
@@ -77,93 +96,82 @@ def main():
         default="gpt-oss-20b.yaml"
     )
     parser.add_argument(
-        "--directory_path",
+        "--input",
         type=str,
-        default = "../data/who-and-when/Algorithm-Generated",
+        default="../data/who-and-when/Algorithm-Generated",
         help="Path to the directory containing JSON chat history files."
     )
-
     parser.add_argument(
-        "--is_handcrafted",
+        "--output",
         type=str,
-        default="False",
-        choices=['True', 'False'], 
-        help="Specify 'True' or 'False'. Default: 'False'."
+        default="./outputs",
+        help="Path to the directory containing inference results."
     )
-
-    # Arguments present for signature compatibility, but ignored in prompt generation
     parser.add_argument(
-        "--api_key", type=str, 
+        "--api_key", 
+        type=str, 
         help="Azure OpenAI API Key. (Ignored for prompt generation)",
         default=None
     )
 
     args = parser.parse_args()
 
-    # Convert is_handcrafted to boolean
-    is_handcrafted_bool = True if args.is_handcrafted == "True" else False
+    # Derive is_handcrafted from directory path
+    is_handcrafted = is_handcrafted_from_path(args.input)
 
-    # Setup output
-    output_dir = "outputs/prompts"
-    os.makedirs(output_dir, exist_ok=True)
-    handcrafted_suffix = "handcrafted" if is_handcrafted_bool else "alg_generated"
-    output_filename = f"{args.method}-{handcrafted_suffix}.json"
-    output_filepath = os.path.join(output_dir, output_filename)
-
-    responses_dir = "outputs/responses"
-    os.makedirs(responses_dir, exist_ok=True)
-    handcrafted_suffix = "handcrafted" if is_handcrafted_bool else "alg_generated"
-    responses_filename = f"{args.method}-{handcrafted_suffix}.json"
-    responses_filepath = os.path.join(responses_dir, responses_filename)
+    # Setup output paths
+    output_dir = Path(args.output)
+    prompts_filepath = get_output_filepath(output_dir / "prompts", args.method, is_handcrafted)
+    responses_filepath = get_output_filepath(output_dir / "responses", args.method, is_handcrafted)
 
     print(f"Method: {args.method}")
-    print(f"Generating prompts to: {output_filepath}")
+    print(f"Data type: {'handcrafted' if is_handcrafted else 'algorithm-generated'}")
+    print(f"Generating prompts to: {prompts_filepath}")
     print(f"Saving responses to: {responses_filepath}")
     
-    prompts_data = []
-
-    if args.method == "all_at_once":
-        prompts_data = get_prompts_all_at_once(args.directory_path, is_handcrafted_bool)
-    elif args.method == "step_by_step":
-        prompts_data = get_prompts_step_by_step(args.directory_path, is_handcrafted_bool)
-    elif args.method == "binary_search":
-        prompts_data = get_prompts_binary_search(args.directory_path, is_handcrafted_bool)
-    elif args.method == "text_grad":
-        prompts_data = get_prompts_textual_grad(args.directory_path, is_handcrafted_bool)
+    # Generate prompts based on method
+    method_map = {
+        "all_at_once": get_prompts_all_at_once,
+        "step_by_step": get_prompts_step_by_step,
+        "binary_search": get_prompts_binary_search,
+        "text_grad": get_prompts_textual_grad,
+    }
+    
+    if args.method in method_map:
+        prompts_data = method_map[args.method](args.input, is_handcrafted)
+    else:
+        raise ValueError(f"Method {args.method} not implemented for prompt generation")
         
     # Wrap in a structure that preserves metadata
-    metadata = {
-        "timestamp": str(datetime.datetime.now()),
-        "method": args.method,
-        # "model": args.model,
-        "directory_path": args.directory_path,
-        "is_handcrafted": args.is_handcrafted
-    },
     final_output = {
-        "metadata": metadata,
+        "metadata": {
+            "timestamp": str(datetime.datetime.now()),
+            "method": args.method,
+            "input_path": args.input,
+            "is_handcrafted": is_handcrafted
+        },
         "prompts": prompts_data
     }
 
+    # Save prompts
     try:
-        with open(output_filepath, 'w', encoding='utf-8') as f:
+        with open(prompts_filepath, 'w', encoding='utf-8') as f:
             json.dump(final_output, f, indent=4, ensure_ascii=False)
-        print(f"Successfully saved {len(prompts_data)} entries to {output_filepath}")
+        print(f"Successfully saved {len(prompts_data)} entries to {prompts_filepath}")
     except Exception as e:
         print(f"Error saving prompts: {e}")
+        sys.exit(1)
 
     # Run inference
-    flattened = flatten(prompts_data)[:]
-    results = run_inference(
-        args.config,
-        flattened
-    )
+    flattened = flatten(prompts_data)
+    results = run_inference(args.config, flattened)
     unflattened = unflatten(results)
 
-    with open(responses_filepath, "w") as f:
+    # Save responses
+    with open(responses_filepath, "w", encoding='utf-8') as f:
         json.dump(unflattened, f, indent=4, ensure_ascii=False)
+    print(f"Successfully saved responses to {responses_filepath}")
 
-    ## parse
-    
 
 if __name__ == "__main__":
     main()
