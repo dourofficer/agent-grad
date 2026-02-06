@@ -11,35 +11,49 @@ week 2:
     [-] aggregate bechmarks from every paper: who&when, aegis, agentracer, etc.
         note: partly done, only worked with who&when.
     [ ] choose 50-100 highest quality samples
-[-] code evaluation. need to choose metrics.
-    [x] code evaluate accuracy  : correct += (label == prediction)
-    [ ] a more forgiving metrics: correct += (label in predictions)
-[x] run baselines with GPT-OSS-20B:
+[x] aggregate results from all papers.
+    ----------------------------------------------------------------------
+            agent-level accuracy			step-level accuracy			
+            alg-generated	hand-crafted    alg-generated	hand-crafted	
+    ----------------------------------------------------------------------
+    rank	w/ GT	wo/ GT	w/ GT	wo/ GT	w/ GT	wo/ GT	w/ GT	wo/ GT
+    1st		76.64	75.62	74.91	77.84	49.97	47.46	41.38	29.31
+    2nd		69.62	67.42	69.1	72.86	42.86	44.35	28.63	27.97
+    3rd		69.62	67.2	69.1	69.74	40.65	38.83	28.1	26.8
+    ----------------------------------------------------------------------
+[x] choose metrics.
+    I think Acc@k is a good metrics.
+    - Acc@1 is just usual accuracy: correct += (label == prediction)
+    - Acc@k helps me inspect whether my approach could help narrow down the pool.
+    ```
+    # check if `mistake_step` in error steps identified by text-grad.
+    error_steps = [step['attribution'] == 'INPUT_ERROR' for step in steps]
+    score += (entry['mistake_step'] in error_steps) 
+    ```
+[x] implement baselines with GPT-OSS-20B:
     [x] all-at-once: LLM(traj) -> which (agent, step) is responsible?
     [x] step-by-step: LLM(traj, steps[i]) -> is this step i-th responsible?
-    [x] naive text-grad: 
-        [x] run LLM(traj, idx, loss) -> how steps[idx] contributed to error?
-        [x] evaluate: check if `mistake_step` in error steps identified by text-grad.
-            ```
-            error_steps = [step['attribution'] == 'INPUT_ERROR' for step in steps]
-            score += (entry['mistake_step'] in error_steps)
-            ```
-        -------------------------------------------------------------
-                 method         subset  agent_accuracy  step_accuracy
-        0  step_by_step  alg_generated       40.476190      24.603175
-        1  step_by_step    handcrafted       18.965517       8.620690
-        2   all_at_once  alg_generated       62.698413       7.936508
-        3   all_at_once    handcrafted       29.310345       5.172414
-        4     text_grad  alg_generated       50.000000      30.952381
-        5     text_grad    handcrafted       12.068966       3.448276
-        -------------------------------------------------------------
-        
-        note: text_grad looks terrible.
+    [x] naive text-grad: LLM(traj, idx, loss) -> how steps[idx] contributed to error?
+[x] implement proposed agent-grad with GPT-OSS-20B: [...]
+    [x] agent-grad: LLM(steps[i], steps[i+1], steps[i+1].grad) -> steps[i].grad
+
+[-] evaluate approaches in terms of agent_accuracy & step_accuracy
+    [x] usual accuracy
+    -------------------------------------------------------------
+             method         subset  agent_accuracy  step_accuracy
+    -------------------------------------------------------------
+    0  step_by_step  alg_generated       40.476190      24.603175
+    1  step_by_step    handcrafted       18.965517       8.620690
+    2   all_at_once  alg_generated       62.698413       7.936508
+    3   all_at_once    handcrafted       29.310345       5.172414
+    4     text_grad  alg_generated       50.000000      30.952381
+    5     text_grad    handcrafted       12.068966       3.448276
+    -------------------------------------------------------------
+    note: text_grad looks terrible.
+    [-] acc@k metrics
+
 
 [ ] analyze failure modes of naive text-grad
     compare explanation by model & by annotator(s) in failed cases.
 [ ] (IMPORTANT) think of a scoring mechanisms
-[ ] run prototypes for `agent-grad`:
-    [ ] construct graphs for all evaluation samples.
-    [ ] (main) backbrop textual grad: 
-        LLM(steps[i], steps[i+1], steps[i+1].grad) -> steps[i].grad
+        

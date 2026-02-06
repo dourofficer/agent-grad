@@ -23,10 +23,6 @@ from typing import List, Tuple, Callable, Optional, Dict, Any
 from .core import Tensor
 
 
-# ============================================================
-# PROMPT BUILDERS
-# ============================================================
-
 def build_generic_backward_prompt(
     problem: str,
     ground_truth: str,
@@ -38,28 +34,45 @@ def build_generic_backward_prompt(
 ) -> str:
     """
     Build a backward prompt that computes gradients for ALL inputs at once.
-    
-    This mirrors how matmul's _backward() computes gradients for both tensor1 and tensor2
-    in a single backward call, using the relationship between inputs and output.
+    Uses JSON output format for reliable parsing.
     """
     
     # Format all inputs
     INPUTS = "\n---\n".join([
         f"**Input {i+1}** - Step {input_idx} ({input_role}):\n"
-        f"```\n{input_value}\n```"
+        f"{input_value}\n"
         for i, (input_role, input_idx, input_value) in enumerate(inputs)
     ])
 
-    # Build expected output format for each input
-    OUTPUT_FORMAT_LINES = []
-    for (input_role, input_idx, input_value) in inputs:
-        OUTPUT_FORMAT_LINES.append(f"""### GRADIENT FOR STEP {input_idx} ({input_role})
-ATTRIBUTION: [INPUT_ERROR | PROCESSING_ERROR | NEITHER]
-SEVERITY: [HIGH | MEDIUM | LOW | NONE]
-CRITICISM: <One paragraph explaining specifically how STEP {input_idx} ({input_role} contributed to the problem, or why it didn't.>
-""")
+    # Build JSON template showing expected structure
+    json_template = {
+        f"step_{input_idx}": {
+            "attribution": "ORIGINATING_ERROR | PROPAGATING_ERROR | NEITHER",
+            "severity": "HIGH | MEDIUM | LOW | NONE",
+            "criticism": "Your detailed analysis here"
+        }
+        for (input_role, input_idx, input_value) in inputs
+    }
     
-    OUTPUTS = "\n".join(OUTPUT_FORMAT_LINES)
+    import json
+    EXAMPLE_OUTPUT = json.dumps(json_template, indent=2)
+
+    TASK_GUIDE = """**ATTRIBUTION Guide**:
+- **ORIGINATING_ERROR**: This step contains the ORIGINAL mistake. The error was created HERE, not inherited from previous steps. If this step were fixed, downstream failures would likely be prevented.
+- **PROPAGATING_ERROR**: This step propagated an error from an EARLIER step. The mistake already existed before this step, and while this step failed to catch/correct it, it did not originate the error.
+- **NEITHER**: This step is correct, or the error was introduced in later steps.
+
+**SEVERITY Guide**:
+- **HIGH**: This step is likely the decisive error (root cause)
+- **MEDIUM**: This step contributed but may not be the root cause
+- **LOW**: Minor contribution or uncertain
+- **NONE**: Not responsible
+
+**CRITICISM Guide**:
+Provide a one-paragraph analysis based on your attribution:
+- Maintain a global view from criticism of STEP {output_idx} ({output_role}).
+- If **Error**: Explicitly provide explanation in two parts: (1) how this step contributed to the problem and (2) how it should be changed to maximize the correctness of the whole trajectory.
+- If **Neither**: Briefly explain why the step validates as correct."""
 
     prompt = f"""You are analyzing a failure in a multi-agent system.
 
@@ -85,36 +98,145 @@ The following criticism was identified for the output:
 ## Your Task
 Analyze how EACH INPUT contributed to the OUTPUT's problem.
 
-**Classification Guide**:
+{TASK_GUIDE}
 
-- **INPUT_ERROR** (High blame): This input contains the ORIGINAL mistake. 
-  - The error was created HERE, not inherited from elsewhere
-  - If we fixed THIS input, downstream failures would be prevented
-  - Usually only ONE input is the true source
+## CRITICAL: Output Format
+You MUST respond with ONLY valid JSON in this exact structure (no additional text before or after):
+```json
+{EXAMPLE_OUTPUT}
+```
 
-- **PROCESSING_ERROR** (Partial blame): This input propagated an error from an EARLIER step.
-  - The mistake already existed before this step
-  - This step failed to catch/correct it, but didn't originate it
+For each step, replace the placeholder values with:
+- attribution: exactly one of: ORIGINATING_ERROR, PROPAGATING_ERROR, or NEITHER
+- severity: exactly one of: HIGH, MEDIUM, LOW, or NONE
+- criticism: your detailed analysis as a string
 
-- **NEITHER** (No blame): This input is correct OR the error was introduced by Step {output_idx} itself (not its inputs).
-
-**SEVERITY Guide**:
-- HIGH: This step is likely the decisive error (root cause)
-- MEDIUM: This step contributed but may not be the root cause  
-- LOW: Minor contribution or uncertain
-- NONE: Not responsible
-
-**CRITICISM Guide**:
-- If needed, only include relevant information from the output criticism of STEP {output_idx} ({output_role}).
-- If your analyzed step is concluded an error step, explain how it should be changed to maximize the correctness of the trajectory.
-
-Note: Multiple inputs may share responsibility, or the error may be purely in the processing step itself.
-
-## Required Output Format (provide analysis for EACH input):
-{OUTPUTS}""".strip()
+OUTPUT ONLY THE JSON OBJECT. Do not include explanations, preambles, or any text outside the JSON code block.""".strip()
     
     return prompt
 
+
+def parse_backward_response(response: str, inputs: List[Tuple[str, int, str]]) -> Dict[int, Dict[str, Any]]:
+    """
+    Parse LLM response containing gradients for multiple inputs.
+    Expects JSON format but includes fallback parsing.
+    
+    Returns:
+        dict mapping input_idx -> {attribution, severity, severity_score, criticism}
+    """
+    import re
+    import json
+    
+    results = {}
+    severity_map = {'HIGH': 1.0, 'MEDIUM': 0.6, 'LOW': 0.3, 'NONE': 0.0}
+    
+    # Try to extract JSON from response
+    json_str = response.strip()
+    
+    # Remove markdown code blocks if present
+    code_block_match = re.search(r'```(?:json)?\s*(\{.*?\})\s*```', response, re.DOTALL)
+    if code_block_match:
+        json_str = code_block_match.group(1)
+    else:
+        # Try to find JSON object directly
+        json_match = re.search(r'\{.*\}', response, re.DOTALL)
+        if json_match:
+            json_str = json_match.group(0)
+    
+    # Attempt JSON parsing
+    try:
+        parsed_json = json.loads(json_str)
+        
+        # Extract data for each input
+        for (input_role, input_idx, input_value) in inputs:
+            step_key = f"step_{input_idx}"
+            
+            if step_key in parsed_json:
+                data = parsed_json[step_key]
+                
+                # Normalize attribution (handle variations)
+                attribution = str(data.get('attribution', 'UNKNOWN')).upper().strip()
+                if 'ORIGINAT' in attribution:
+                    attribution = 'ORIGINATING_ERROR'
+                elif 'PROPAGAT' in attribution:
+                    attribution = 'PROPAGATING_ERROR'
+                elif 'NEITHER' in attribution or 'NONE' in attribution:
+                    attribution = 'NEITHER'
+                
+                # Normalize severity
+                severity = str(data.get('severity', 'UNKNOWN')).upper().strip()
+                if severity not in severity_map:
+                    # Try to match partial
+                    for key in severity_map:
+                        if key in severity:
+                            severity = key
+                            break
+                    else:
+                        severity = 'UNKNOWN'
+                
+                severity_score = severity_map.get(severity, 0.0)
+                criticism = str(data.get('criticism', '')).strip()
+                
+                results[input_idx] = {
+                    'attribution': attribution,
+                    'severity': severity,
+                    'severity_score': severity_score,
+                    'criticism': criticism,
+                }
+        
+        # Check if we got all expected inputs
+        if len(results) == len(inputs):
+            return results
+        
+    except json.JSONDecodeError:
+        pass  # Fall through to regex fallback
+    
+    # Fallback: Regex-based parsing for non-JSON responses
+    for (input_role, input_idx, input_value) in inputs:
+        if input_idx in results:
+            continue  # Already parsed from JSON
+        
+        # Try to find any mention of this step
+        patterns = [
+            rf"step[\s_-]*{input_idx}[^\n]*?attribution[:\s]*([A-Z_]+)",
+            rf"step[\s_-]*{input_idx}.*?attribution[:\s]*\[?([A-Z_]+)\]?",
+            rf"###\s*(?:GRADIENT\s+FOR\s+)?STEP\s+{input_idx}.*?ATTRIBUTION[:\s]*\[?([A-Z_]+)\]?",
+        ]
+        
+        attribution = 'UNKNOWN'
+        for pattern in patterns:
+            match = re.search(pattern, response, re.IGNORECASE | re.DOTALL)
+            if match:
+                attribution = match.group(1).upper()
+                break
+        
+        # Similar for severity
+        severity = 'UNKNOWN'
+        sev_patterns = [
+            rf"step[\s_-]*{input_idx}[^\n]*?severity[:\s]*([A-Z]+)",
+            rf"step[\s_-]*{input_idx}.*?severity[:\s]*\[?([A-Z]+)\]?",
+        ]
+        for pattern in sev_patterns:
+            match = re.search(pattern, response, re.IGNORECASE | re.DOTALL)
+            if match:
+                severity = match.group(1).upper()
+                break
+        
+        severity_score = severity_map.get(severity, 0.0)
+        
+        # Extract criticism (any text associated with this step)
+        crit_pattern = rf"step[\s_-]*{input_idx}.*?criticism[:\s]*(.+?)(?=step[\s_-]*\d+|$)"
+        crit_match = re.search(crit_pattern, response, re.IGNORECASE | re.DOTALL)
+        criticism = crit_match.group(1).strip() if crit_match else f"Unable to parse gradient for step {input_idx}"
+        
+        results[input_idx] = {
+            'attribution': attribution,
+            'severity': severity,
+            'severity_score': severity_score,
+            'criticism': criticism,
+        }
+    
+    return results
 
 # ============================================================
 # BACKWARD TEMPLATE REGISTRY
@@ -150,61 +272,6 @@ def get_backward_template(role: str) -> Callable:
         return _BACKWARD_TEMPLATES.get("assistant", _BACKWARD_TEMPLATES["generic"])
     
     return _BACKWARD_TEMPLATES["generic"]
-
-
-# ============================================================
-# RESPONSE PARSING
-# ============================================================
-
-def parse_backward_response(response: str, inputs: List[Tuple[str, int, str]]) -> Dict[int, Dict[str, Any]]:
-    """
-    Parse LLM response that contains gradients for multiple inputs.
-    
-    Returns:
-        dict mapping input_idx -> {attribution, severity, severity_score, criticism}
-    """
-    import re
-    
-    results = {}
-    severity_map = {'HIGH': 1.0, 'MEDIUM': 0.6, 'LOW': 0.3, 'NONE': 0.0}
-    
-    for (input_role, input_idx, input_value) in inputs:
-        # Find the section for this input
-        pattern = rf"###\s*GRADIENT\s+FOR\s+STEP\s+{input_idx}.*?(?=###\s*GRADIENT|$)"
-        match = re.search(pattern, response, re.DOTALL | re.IGNORECASE)
-        
-        if match:
-            section = match.group(0)
-            
-            # Extract attribution
-            attr_match = re.search(r'ATTRIBUTION:\s*\[?([A-Z_]+)\]?', section.upper())
-            attribution = attr_match.group(1) if attr_match else 'UNKNOWN'
-            
-            # Extract severity
-            sev_match = re.search(r'SEVERITY:\s*\[?([A-Z]+)\]?', section.upper())
-            severity = sev_match.group(1) if sev_match else 'UNKNOWN'
-            severity_score = severity_map.get(severity, 0.0)
-            
-            # Extract criticism
-            crit_match = re.search(r'CRITICISM:\s*(.+?)(?=\n\n|###|$)', section, re.DOTALL)
-            criticism = crit_match.group(1).strip() if crit_match else section
-            
-            results[input_idx] = {
-                'attribution': attribution,
-                'severity': severity,
-                'severity_score': severity_score,
-                'criticism': criticism,
-            }
-        else:
-            # Fallback if section not found
-            results[input_idx] = {
-                'attribution': 'UNKNOWN',
-                'severity': 'UNKNOWN', 
-                'severity_score': 0.0,
-                'criticism': f'Could not parse gradient for step {input_idx}',
-            }
-    
-    return results
 
 
 # ============================================================

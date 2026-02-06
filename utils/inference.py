@@ -1,3 +1,33 @@
+"""
+LLM Prompt Generation and Inference Pipeline
+
+This script orchestrates the generation of prompts from chat history data and runs
+inference using various analysis methods. It supports multiple prompt generation
+strategies for analyzing conversational data.
+
+Workflow:
+    1. Load chat history JSON files from input directory
+    2. Generate prompts using specified method (all_at_once, step_by_step, 
+       binary_search, or text_grad)
+    3. Flatten prompt data structure for batch inference
+    4. Run LLM inference using vLLM backend
+    5. Unflatten responses and save results
+
+Output Structure:
+    - Prompts: Saved to outputs/prompts/{method}-{data_type}.json
+    - Responses: Saved to outputs/responses/{method}-{data_type}.json
+
+The script automatically determines data type from the input directory path and
+generates consistent output filenames. Metadata including timestamps, method,
+and data provenance is preserved throughout the pipeline.
+
+Example:
+    $ python -m utils.inference --method step_by_step \
+                     --config gpt-oss-20b.yaml \
+                     --input ../data/who-and-when/Algorithm-Generated \
+                     --output ./outputs
+"""
+
 import os
 import argparse
 import sys

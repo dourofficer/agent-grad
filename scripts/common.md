@@ -1,3 +1,4 @@
+```bash
 python get_prompts.py \
     --method all_at_once \
     --model gpt-4o \
@@ -22,6 +23,8 @@ python get_prompts.py \
     --is_handcrafted True \
     --directory_path "./data/who-and-when/Hand-Crafted"
 ```
+
+```python
 from Lib.new_utils import mdprint
 import json
 data = json.load(open("prompt_outputs/prompts_all_at_once_gpt-4o_handcrafted.json"))
@@ -31,7 +34,7 @@ steps = [x["chat_history"] for x in data["prompts"]]
 mdprint(prompts[0])
 ```
 
-```
+```python
 from Lib.new_utils import mdprint
 import json
 data = json.load(open("prompt_outputs/prompts_text_grad_gpt-4o_alg_generated.json"))
@@ -54,7 +57,7 @@ step_prompt = step["messages"][1]["content"]
 mdprint(step_prompt)
 ```
 
-```
+```python
 i = 2
 label = labels[i]
 mistake_step = int(label['mistake_step'])
@@ -63,27 +66,28 @@ label, mdprint(step)
 ```
 
 
-```
-python -m utils.inference --config utils/gpt-oss-20b.yaml --method step_by_step --directory_path "data/who-and-when/Algorithm-Generated/" --is_handcrafted False
-python -m utils.inference --config utils/gpt-oss-20b.yaml --method all_at_once --directory_path "data/who-and-when/Algorithm-Generated/" --is_handcrafted False
-
-python -m utils.inference --config utils/gpt-oss-20b.yaml --method step_by_step --directory_path "data/who-and-when/Hand-Crafted/" --is_handcrafted True
-python -m utils.inference --config utils/gpt-oss-20b.yaml --method all_at_once --directory_path "data/who-and-when/Hand-Crafted/" --is_handcrafted True
-
+```bash
 python -m utils.inference \
-    --config utils/gpt-oss-20b.yaml \
+    --config configs/gpt-oss-20b.yaml \
     --method text_grad \
     --input "./data/who-and-when/Algorithm-Generated/" \
     --output "./outputs/gpt-oss-20b/"
 
 python -m utils.inference \
-    --config utils/gpt-oss-20b.yaml \
+    --config configs/gpt-oss-20b.yaml \
     --method text_grad \
     --input "./data/who-and-when/Hand-Crafted/" \
     --output "./outputs/gpt-oss-20b/"
 ```
 
+```bash
+python -m utils.infer_agent_grad \
+    --input data/who-and-when/Hand-Crafted \
+    --output outputs/gpt-oss-20b/graphs \
+    --start_idx 10 --end_idx 15
 ```
+
+```bash
 CUDA_VISIBLE_DEVICES=2 vllm serve openai/gpt-oss-20b \
     --port 8882 \
     --gpu-memory-utilization 0.90 \

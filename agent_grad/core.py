@@ -55,6 +55,9 @@ class Tensor:
     def short_str(self):
         """Short representation for prompts."""
         return f"[Step {self.step_idx}] {self.role}: {self.value[:200]}..."
+
+    def input_nodes(self):
+        return [node.step_idx for node in self._prev]
     
     def backward(self, initial_grad: str = None):
         """
