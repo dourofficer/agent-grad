@@ -65,8 +65,19 @@ week 2:
     agent_grad   alg_generated       -      -      -      -      -      -      -      -
                  handcrafted      0.00   8.62  24.14  44.83   0.00   6.90  18.97  34.48
     -----------------------------------------------------------------------------------
+[x] rudimentary analysis
+    potential reasons why agent_grad performs so badly:
+        - poor quality graph construction
+        - parsing error when computing gradient
+        - each step only receives local information with downstream gradient,
+          if donwstream gradient is lossy, then the longer the trajectory,
+          the more information is loss -> inaccurate predictions.
+          ~ vanishing gradient.
 
-[ ] understand how GraphTracer build IDG for evaluation on who&when
+[x] understand how GraphTracer build IDG for evaluation on who&when
+    > An LLM analyzes each step and infers: "Which prior steps did this agent likely depend on?" post-hoc.
+[ ] read AgentRX to know how they improved Who&When
+    
 [ ] gain some insights about counterfactual reasoning
 week 3
 [ ] analyze failure modes of naive text-grad
