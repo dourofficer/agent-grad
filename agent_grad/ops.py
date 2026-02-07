@@ -71,7 +71,7 @@ def build_generic_backward_prompt(
 **CRITICISM Guide**:
 Provide a one-paragraph analysis based on your attribution:
 - Maintain a global view from criticism of STEP {output_idx} ({output_role}).
-- If **Error**: Explicitly provide explanation in two parts: (1) how this step contributed to the problem and (2) how it should be changed to maximize the correctness of the whole trajectory.
+- If **Error**: Explicitly provide explanation in two parts: (1) why this step is classified as ORIGINATING_ERROR / PROPAGATING_ERROR, i.e., how this step contributed to the problem and (2) how it should be changed to maximize the correctness of the whole trajectory.
 - If **Neither**: Briefly explain why the step validates as correct."""
 
     prompt = f"""You are analyzing a failure in a multi-agent system.

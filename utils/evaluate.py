@@ -1,155 +1,202 @@
-import re
 import json
+from utils.prompting import parse_llm_json_output
 import os
-import argparse
+import pandas as pd
 
-def read_predictions(eval_file):
-    if not os.path.exists(eval_file):
-        print(f"Error: Evaluation file not found at {eval_file}")
-        return {}
 
-    try:
-        with open(eval_file, 'r', encoding='utf-8') as file:
-            data = file.read()
-    except Exception as e:
-        print(f"Error reading evaluation file {eval_file}: {e}")
-        return {}
-
-    predictions = {}
-    pattern = r"Prediction for ([^:]+\.json):(.*?)(?=Prediction for|\Z)"
-    blocks = re.finditer(pattern, data, re.DOTALL)
-    parsed_count = 0
-
-    for block in blocks:
-        content = block.group(2).strip()
-        idx = block.group(1).strip()
-        agent_name_match = re.search(r"Agent Name:\s*([\w_]+)", content, re.IGNORECASE)
-        step_number_match = re.search(r"Step Number:\s*(\d+)", content, re.IGNORECASE)
-
-        if agent_name_match and step_number_match:
-            agent_name = agent_name_match.group(1)
-            step_number = step_number_match.group(1)
-            predictions[idx] = {
-                'predicted_agent': agent_name,
-                'predicted_step': f"{step_number}"
-            }
-            parsed_count += 1
-        else:
-            print(f"Warning: Could not parse Agent Name/Step Number for {idx} in {eval_file}")
-
-    print(f"--- Predictions Read from {eval_file} ---")
-    print(f"Successfully parsed predictions for {parsed_count} files.")
-    print("=======================================")
-    return predictions
-
-def read_actual_data(labeled_json):
-    try:
-        with open(labeled_json, 'r', encoding='utf-8') as file:
-            data = json.load(file)
-        mistake_agent = data.get('mistake_agent')
-        mistake_step = data.get('mistake_step')
-        if mistake_agent is not None and mistake_step is not None:
-            return str(mistake_agent), str(mistake_step)
-        else:
-            print(f"Warning: 'mistake_agent' or 'mistake_step' key missing in {labeled_json}")
-            return None, None
-    except FileNotFoundError:
-        print(f"Error: Actual data file not found during read: {labeled_json}")
-        return None, None
-    except json.JSONDecodeError:
-        print(f"Error: Could not decode JSON from {labeled_json}")
-        return None, None
-    except Exception as e:
-        print(f"Error reading actual data from {labeled_json}: {e}")
-        return None, None
-
-def evaluate_accuracy(predictions, data_path, total_files):
-    correct_agent = 0
-    correct_step = 0
-    files_evaluated = 0
-
-    if total_files == 0:
-        print("Error: No JSON files found in the data path to evaluate against.")
-        return 0.0, 0.0
-
-    print(f"\n--- Starting Evaluation ---")
-    print(f"Total reference JSON files found in {data_path}: {total_files}")
-    print(f"Predictions available for {len(predictions)} files.")
-    print("=======================================")
-
-    for idx, pred in predictions.items():
-        labeled_file = os.path.join(data_path, f"{idx}")
-
-        if os.path.exists(labeled_file):
-            files_evaluated += 1
-            actual_agent, actual_step = read_actual_data(labeled_file)
-
-            if actual_agent is not None and actual_step is not None:
-                if actual_agent in pred['predicted_agent'] :
-                    correct_agent += 1
-                if actual_step in pred['predicted_step'] :
-                    correct_step += 1
-            else:
-                 print(f"Skipping evaluation for {idx} due to issues reading actual data.")
-
-        else:
-            print(f"Warning: Labeled file not found for prediction key '{idx}': {labeled_file}")
-
-    print("\n--- Evaluation Summary ---")
-    print(f"Total reference files in data_path: {total_files}")
-    print(f"Predictions parsed from eval file:  {len(predictions)}")
-    print(f"Files evaluated (prediction found & actual data read): {files_evaluated}")
-    print(f"Correct Agent Predictions: {correct_agent}")
-    print(f"Correct Step Predictions:  {correct_step}")
-
-    agent_accuracy = (correct_agent / total_files) * 100 if total_files > 0 else 0.0
-    step_accuracy = (correct_step / total_files) * 100 if total_files > 0 else 0.0
-
-    return agent_accuracy, step_accuracy
-
-def main():
-    parser = argparse.ArgumentParser(description="Evaluate agent and step prediction accuracy from an evaluation log file.")
-    parser.add_argument(
-        "--data_path",
-        type=str,
-        default='../Who&When/Algorithm-Generated',
-        help="Path to the directory containing the ground truth files."
-    )
-    parser.add_argument(
-        "--eval_file",
-        type=str,
-        required=True,
-        help="Path to the evaluation log file containing the predictions."
-    )
-    args = parser.parse_args()
+def _extract_prediction(response, chat_history, method, role_idx):
+    """Helper function to extract a single prediction from a response."""
+    parsed = parse_llm_json_output(response.get("response"))
+    response["parsed"] = parsed
+    step = response.get("step")
     
-    data_path = args.data_path
-    eval_file = args.eval_file
+    # Step-by-step method
+    if method == "step_by_step":
+        if parsed.get("is_decisive") and 0 <= step < len(chat_history):
+            return {
+                "predicted_agent": chat_history[step][role_idx],
+                "predicted_step": f"{step}",
+                "reason": parsed.get("reason")
+            }
+    
+    # All-at-once method
+    elif method == "all_at_once":
+        if all(parsed.values()):
+            return {
+                "predicted_agent": parsed.get("agent_name"),
+                "predicted_step": f"{parsed.get('step_number')}",
+                "reason": parsed.get("reason")
+            }
+    
+    # Text-grad method
+    elif method == "text_grad":
+        if all(parsed.values()) and parsed.get("attribution") == "ORIGINATING_ERROR" \
+           and 0 <= step < len(chat_history):
+            return {
+                "predicted_agent": chat_history[step][role_idx],
+                "predicted_step": f"{step}",
+                "reason": parsed.get("criticism")
+            }
+    
+    return None
 
-    if not os.path.isdir(data_path):
-        print(f"Error: Data directory not found at {data_path}")
-        actual_total_files = 0
-    else:
-        try:
-            json_files_in_data_path = [
-                f for f in os.listdir(data_path)
-                if f.endswith('.json') and os.path.isfile(os.path.join(data_path, f))
-            ]
-            actual_total_files = len(json_files_in_data_path)
-        except Exception as e:
-            print(f"Error reading data directory {data_path}: {e}")
-            actual_total_files = 0
 
-    predictions = read_predictions(eval_file)
+def infer_predictions(data, method="step_by_step", subset="handcrafted"):
+    """Adds 'predictions' field (list of all valid predictions) to each entry."""
+    assert subset in ("handcrafted", "alg_generated")
+    assert method in ("all_at_once", "step_by_step", "text_grad")
+    
+    role_idx = "role" if subset == "handcrafted" else "name"
 
-    agent_accuracy, step_accuracy = evaluate_accuracy(predictions, data_path, actual_total_files)
+    for entry in data:
+        chat_history = entry.get("chat_history", [])
+        predictions = []
+        
+        for response in entry.get("responses", []):
+            pred = _extract_prediction(response, chat_history, method, role_idx)
+            if pred:
+                predictions.append(pred)
+        
+        entry["predictions"] = predictions
+    
+    return data
 
-    print("\n--- Final Accuracy Results ---")
-    print(f"Evaluation File: {eval_file}")
-    print(f"Data Path:       {data_path}")
-    print(f"Agent Accuracy: {agent_accuracy:.2f}%")
-    print(f"Step Accuracy:  {step_accuracy:.2f}%")
-    print(f"(Accuracy calculated based on {actual_total_files} total files in data path)")
+
+def add_prediction(data, method="step_by_step", subset="handcrafted"):
+    """Adds 'prediction' field (first valid prediction) to each entry."""
+    infer_predictions(data, method, subset)
+    
+    # Convert predictions list to single prediction (first or None)
+    for entry in data:
+        predictions = entry.pop("predictions", [])
+        entry["prediction"] = predictions[0] if predictions else {
+            "predicted_agent": None,
+            "predicted_step": None,
+            "reason": None
+        }
+    
+    return data
+
+
+def compute_acc(data, k=1):
+    """Compute accuracy@k for agent and step predictions."""
+    assert data and "predictions" in data[0], \
+        "Data must contain 'predictions' field. Run infer_predictions first."
+    
+    correct_agent = correct_step = 0
+    
+    for entry in data:
+        top_k = entry["predictions"][:k]
+        label = entry["labels"]
+        
+        if label["mistake_agent"] in [p["predicted_agent"] for p in top_k]:
+            correct_agent += 1
+        if label["mistake_step"] in [p["predicted_step"] for p in top_k]:
+            correct_step += 1
+    
+    total = len(data)
+    agent_acc = (correct_agent / total) * 100
+    step_acc = (correct_step / total) * 100
+
+    # print(f"\n--- Accuracy@{k} ---")
+    # print(f"Total files: {total}")
+    # print(f"Files with predictions: {sum(1 for e in data if e['predictions'])}")
+    # print(f"Agent: {correct_agent}/{total} ({agent_acc:.2f}%)")
+    # print(f"Step:  {correct_step}/{total} ({step_acc:.2f}%)")
+
+    return agent_acc, step_acc
 
 if __name__ == "__main__":
-    main()
+    FILES = [
+        "./outputs/gpt-oss-20b/responses/step_by_step-alg_generated.json",
+        "./outputs/gpt-oss-20b/responses/step_by_step-handcrafted.json",
+        "./outputs/gpt-oss-20b/responses/all_at_once-alg_generated.json",
+        "./outputs/gpt-oss-20b/responses/all_at_once-handcrafted.json",
+        "./outputs/gpt-oss-20b/responses/text_grad-handcrafted.json",
+        "./outputs/gpt-oss-20b/responses/text_grad-alg_generated.json",
+    ]
+
+    # Load all data
+    data = []
+    for file in FILES:
+        parts = file.split('/')[-1].replace('.json', '').split('-')
+        with open(file) as f:
+            data.append({
+                "method": parts[0],
+                "subset": parts[1],
+                "entries": json.load(f)
+            })
+
+    # Add predictions to all entries
+    data_pred = [
+        {
+            "method": d["method"],
+            "subset": d["subset"],
+            "entries": infer_predictions(
+                data=d["entries"], 
+                method=d["method"], 
+                subset=d["subset"]
+            ) 
+        }
+        for d in data
+    ]
+
+    # Compute accuracy for multiple k values
+    k_values = [1, 3, 5, 10]
+    reports = []
+    
+    for data_cfg in data_pred:
+        method = data_cfg["method"]
+        subset = data_cfg["subset"]
+        entries = data_cfg["entries"]
+        
+        for k in k_values:
+            agent_acc, step_acc = compute_acc(entries, k=k)
+            reports.append({
+                "method": method,
+                "subset": subset,
+                "k": k,
+                "agent_acc": agent_acc,
+                "step_acc": step_acc
+            })
+    
+    # Create DataFrame and display
+    df = pd.DataFrame(reports)
+    
+    # Pivot table for better readability
+    print("\n=== Agent Accuracy @k ===")
+    agent_pivot = df.pivot_table(
+        values='agent_acc', 
+        index=['method', 'subset'], 
+        columns='k',
+        aggfunc='first'
+    )
+    print(agent_pivot.round(2))
+    
+    print("\n=== Step Accuracy @k ===")
+    step_pivot = df.pivot_table(
+        values='step_acc', 
+        index=['method', 'subset'], 
+        columns='k',
+        aggfunc='first'
+    )
+    print(step_pivot.round(2))
+    
+    # Optional: Combined view
+    print("\n=== Combined Results ===")
+    df['agent@k'] = df['agent_acc'].round(2).astype(str)
+    df['step@k'] = df['step_acc'].round(2).astype(str)
+    
+    combined = df.pivot_table(
+        values=['agent@k', 'step@k'],
+        index=['method', 'subset'],
+        columns='k',
+        aggfunc='first'
+    )
+    print(combined)
+    
+    # Save to CSV
+    output_path = "./outputs/gpt-oss-20b/accuracy_report.csv"
+    os.makedirs(os.path.dirname(output_path), exist_ok=True)
+    df.to_csv(output_path, index=False)
+    print(f"\nFull report saved to: {output_path}")
