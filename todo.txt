@@ -66,7 +66,9 @@ week 2:
                  handcrafted      0.00   8.62  24.14  44.83   0.00   6.90  18.97  34.48
     -----------------------------------------------------------------------------------
 
-
+[ ] understand how GraphTracer build IDG for evaluation on who&when
+[ ] gain some insights about counterfactual reasoning
+week 3
 [ ] analyze failure modes of naive text-grad
     compare explanation by model & by annotator(s) in failed cases.
 [ ] (IMPORTANT) think of a scoring mechanisms
