@@ -73,10 +73,18 @@ week 2:
           if donwstream gradient is lossy, then the longer the trajectory,
           the more information is loss -> inaccurate predictions.
           ~ vanishing gradient.
+    what are the next steps:
+        - quite stuck here.
 
 [x] understand how GraphTracer build IDG for evaluation on who&when
     > An LLM analyzes each step and infers: "Which prior steps did this agent likely depend on?" post-hoc.
-[ ] read AgentRX to know how they improved Who&When
+[x] read AgentRX to know how they improved Who&When
+    > They re-defined what an error decisive step -> the first unrecoverable step
+    This is more nuanced than Who&When because sometimes in their annotation, a failed
+    step is later corrected, hence not the root cause of the failed trajectory.
+    > The method seems to be purely prompt-based, and they don't provide the dataset yet.
+[x] read GraphTracer 
+    > SOTA. this work indicate that leveraging graph structure of trajectory helps.
     
 [ ] gain some insights about counterfactual reasoning
 week 3

@@ -27,9 +27,11 @@ def compute_acc(data, k=1):
     total = len(data)
     files_with_predictions = 0
     
+    lengths = []
     for entry in data:
         metadata = entry['metadata']
         nodes = entry['nodes']
+        lengths.append(len(nodes))
         
         # Extract ground truth
         gt_agent = metadata['mistake_agent']
@@ -79,6 +81,7 @@ def compute_acc(data, k=1):
     print(f"Correct Step in top-{k}: {correct_step}/{total}")
     print(f"Agent Accuracy@{k}: {agent_accuracy:.2f}%")
     print(f"Step Accuracy@{k}: {step_accuracy:.2f}%")
+    print(f"average length: {sum(lengths) / len(lengths)}")
 
     return agent_accuracy, step_accuracy
 

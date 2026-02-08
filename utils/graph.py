@@ -45,6 +45,17 @@ class MagenticOneTrajectoryParser:
     5. After replan, new epoch starts with dependencies on:
        - Original task
        - New synthesized prompt (which encapsulates updated facts/plan)
+
+    TASK → No dependencies
+    INITIAL_PLAN → task
+    NEW_PLAN → task + replan trigger
+    LEDGER_UPDATE → task + current plan + previous ledger in epoch + all worker actions in current epoch
+    INSTRUCTION → last ledger in epoch
+    WORKER_ACTION → most recent instruction (searches backward)
+    NEXT_SPEAKER → last ledger in epoch
+    REPLAN_TRIGGER → last ledger from BEFORE epoch reset
+    FINAL_ANSWER → task + (last worker action OR last ledger)
+    Other → immediate predecessor
     """
     
     WORKER_AGENTS = {"WebSurfer", "Coder", "Executor", "FileSurfer", "Assistant", "UserProxy"}
@@ -142,132 +153,6 @@ class MagenticOneTrajectoryParser:
             return self._build_structural_dependencies(events)
         else:
             raise ValueError(f"Unknown dependency mode: {self.dependency_mode}")
-    
-    def _build_full_dependencies(self, events: List[TrajectoryEvent]) -> Dict[int, List[int]]:
-        """
-        Full dependency mode: Each event depends on all previous events in the same epoch.
-        Cross-epoch dependencies only on task and synthesized prompts.
-        """
-        dependencies = {}
-        
-        # Find task index (usually 0)
-        task_idx = None
-        for e in events:
-            if e.event_type == EventType.TASK:
-                task_idx = e.index
-                break
-        
-        # Track epoch start indices and synthesized prompts
-        epoch_starts = {0: 0}  # epoch -> first index in that epoch
-        synthesized_prompts = {}  # epoch -> index of synthesized prompt/new plan
-        
-        for e in events:
-            if e.event_type in [EventType.INITIAL_PLAN, EventType.NEW_PLAN]:
-                synthesized_prompts[e.epoch] = e.index
-            if e.epoch not in epoch_starts:
-                epoch_starts[e.epoch] = e.index
-        
-        for event in events:
-            deps = []
-            
-            if event.index == 0:
-                dependencies[event.index] = []
-                continue
-            
-            epoch_start = epoch_starts.get(event.epoch, 0)
-            
-            # All events in the same epoch before this one
-            for i in range(epoch_start, event.index):
-                if events[i].epoch == event.epoch:
-                    deps.append(i)
-            
-            # Cross-epoch: depend on task
-            if event.epoch > 0 and task_idx is not None and task_idx not in deps:
-                deps.append(task_idx)
-            
-            # Cross-epoch: depend on previous epoch's synthesized prompt for context
-            # (This represents the facts/plan being carried forward)
-            if event.epoch > 0:
-                prev_epoch = event.epoch - 1
-                if prev_epoch in synthesized_prompts:
-                    sp_idx = synthesized_prompts[prev_epoch]
-                    if sp_idx not in deps:
-                        deps.append(sp_idx)
-            
-            dependencies[event.index] = sorted(deps)
-        
-        return dependencies
-    
-    def _build_immediate_dependencies(self, events: List[TrajectoryEvent]) -> Dict[int, List[int]]:
-        """
-        Immediate dependency mode: Only direct predecessors.
-        - Ledger depends on previous ledger + intervening broadcasts
-        - Instruction depends on ledger
-        - Worker action depends on instruction
-        """
-        dependencies = {}
-        
-        last_ledger_idx = None
-        last_instruction_idx = None
-        last_broadcast_indices = []  # Broadcasts since last ledger
-        task_idx = None
-        
-        for event in events:
-            deps = []
-            
-            if event.event_type == EventType.TASK:
-                task_idx = event.index
-                dependencies[event.index] = []
-                continue
-            
-            if event.event_type == EventType.INITIAL_PLAN:
-                if task_idx is not None:
-                    deps.append(task_idx)
-            
-            elif event.event_type == EventType.LEDGER_UPDATE:
-                # Depends on previous ledger and all broadcasts since then
-                if last_ledger_idx is not None:
-                    deps.append(last_ledger_idx)
-                deps.extend(last_broadcast_indices)
-                last_ledger_idx = event.index
-                last_broadcast_indices = []
-            
-            elif event.event_type == EventType.INSTRUCTION:
-                # Depends on the ledger update
-                if last_ledger_idx is not None:
-                    deps.append(last_ledger_idx)
-                last_instruction_idx = event.index
-            
-            elif event.event_type == EventType.WORKER_ACTION:
-                # Depends on instruction
-                if last_instruction_idx is not None:
-                    deps.append(last_instruction_idx)
-                last_broadcast_indices.append(event.index)
-            
-            elif event.event_type == EventType.REPLAN_TRIGGER:
-                # Depends on recent history showing stall
-                if last_ledger_idx is not None:
-                    deps.append(last_ledger_idx)
-                # Reset tracking for new epoch
-                last_broadcast_indices = []
-            
-            elif event.event_type == EventType.NEW_PLAN:
-                if task_idx is not None:
-                    deps.append(task_idx)
-                # Depends on replan trigger
-                for i in range(event.index - 1, -1, -1):
-                    if events[i].event_type == EventType.REPLAN_TRIGGER:
-                        deps.append(i)
-                        break
-            
-            else:
-                # Default: depend on immediate predecessor
-                if event.index > 0:
-                    deps.append(event.index - 1)
-            
-            dependencies[event.index] = sorted(set(deps))
-        
-        return dependencies
     
     def _build_structural_dependencies(self, events: List[TrajectoryEvent]) -> Dict[int, List[int]]:
         """
