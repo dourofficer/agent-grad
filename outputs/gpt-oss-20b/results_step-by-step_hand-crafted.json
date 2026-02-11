@@ -1,0 +1,22 @@
+{
+  "k": 6,
+  "total": 10,
+  "correct_agent": 6,
+  "correct_step": 2,
+  "agent_acc": 60.0,
+  "step_acc": 20.0,
+  "correct_files": [
+    "6.json",
+    "9.json"
+  ],
+  "failed_files": [
+    "1.json",
+    "2.json",
+    "3.json",
+    "4.json",
+    "5.json",
+    "7.json",
+    "8.json",
+    "10.json"
+  ]
+}

@@ -93,13 +93,25 @@ python -m cli.inference \
     --config 'configs/gpt-oss-20b.yaml' \
     --input 'data/ww/hand-crafted' \
     --output 'outputs/gpt-oss-20b/all-at-once/hand-crafted'
+python -m cli.inference \
+    --method 'step_by_step' \
+    --config 'configs/gpt-oss-20b.yaml' \
+    --input 'data/ww/hand-crafted' \
+    --output 'outputs/gpt-oss-20b/step_by_step/hand-crafted' \
+    --start_idx 0 --end_idx 2
 
 python -m cli.predict \
     --dir outputs/gpt-oss-20b/all-at-once/hand-crafted \
     --method all_at_once
 
 python -m cli.evaluate \
-    --dir outputs/gpt-oss-20b/all-at-once/hand-crafted \
+    --dir 'outputs/gpt-oss-20b/all-at-once/hand-crafted' \
+    --k 1 \
+    --save 'outputs/gpt-oss-20b/results_all-at-once_hand-crafted.json'
+python -m cli.evaluate \
+    --dir 'outputs/gpt-oss-20b/step-by-step/hand-crafted' \
+    --k 1 \
+    --save 'outputs/gpt-oss-20b/results_step-by-step_hand-crafted.json'
 ```
 ----------------------------------------------
 
