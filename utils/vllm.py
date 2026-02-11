@@ -43,11 +43,30 @@ def send_request(url, pload_config, data, request_id):
         result_entry = {
             "request_id": request_id,
             "messages": messages,
+            "reasoning": None,
             "response": None,
             **data
         }
     
     return request_id, result_entry, error_entry
+
+def call_vllm(prompt, config_path="./configs/gpt-oss-20b.yaml"):
+    """Call vLLM inference endpoint with a prompt."""
+    with open(config_path, "r") as f:
+        config = yaml.safe_load(f)
+    
+    hostname = config.pop("hostname")
+    port = config.pop("port")
+    concurrent_requests = config.pop("concurrent_requests", 10)
+    
+    url = f"http://{hostname}:{port}/v1/chat/completions"
+    
+    data = {"messages": [
+        {"role": "system", "content": "You are a helpful assistant."},
+        {"role": "user", "content": prompt}
+    ]}
+    _, out, _ = send_request(url, config, data, request_id=0)
+    return {"reasoning": out["reasoning"], "response": out["response"]}
 
 def run_inference(config_path, dataset):
     with open(config_path, "r") as f:

@@ -2,4 +2,6 @@
 __pycache__/
 .venv
 .ipynb_checkpoints/
-outputs/
+outputs/gpt-oss-20b/prompts/
+outputs/gpt-oss-20b/responses/
+outputs/gpt-oss-20b/graphs/

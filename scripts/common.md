@@ -86,6 +86,22 @@ python -m utils.infer_agent_grad \
     --output outputs/gpt-oss-20b/graphs \
     --start_idx 10 --end_idx 15
 ```
+----------------------------------------------
+```bash
+python -m cli.inference \
+    --method 'all_at_once' \
+    --config 'configs/gpt-oss-20b.yaml' \
+    --input 'data/ww/hand-crafted' \
+    --output 'outputs/gpt-oss-20b/all-at-once/hand-crafted'
+
+python -m cli.predict \
+    --dir outputs/gpt-oss-20b/all-at-once/hand-crafted \
+    --method all_at_once
+
+python -m cli.evaluate \
+    --dir outputs/gpt-oss-20b/all-at-once/hand-crafted \
+```
+----------------------------------------------
 
 ```bash
 CUDA_VISIBLE_DEVICES=2 vllm serve openai/gpt-oss-20b \
