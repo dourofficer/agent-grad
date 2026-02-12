@@ -124,6 +124,16 @@ def parse_backward_response(
     Falls back to regex when the response is not valid JSON.
     """
     VALID_ATTRIBUTIONS = {"ORIGINATING_ERROR", "PROPAGATING_ERROR", "NEITHER"}
+    attr_tmpl = (
+        "Extract the attribution value for step {idx} from the following text: {text} "
+        "Extract verbatim and return your answer directly without explanation, no preamble. "
+        "If the information is not present, return 'UNKNOWN' only."
+    )
+    crit_tmpl = (
+        "Extract the criticism value for step {idx} from the following text: {text} "
+        "Extract verbatim and return your answer directly without explanation, no preamble. "
+        "If the information is not present, return 'UNKNOWN' only."
+    )
     results: Dict[int, Dict[str, str]] = {}
     active_inputs = [x for x in inputs if x[-1] is True] # only requires_grad = True
 
@@ -144,20 +154,24 @@ def parse_backward_response(
     if parsed_json is not None:
         for (_, inp_idx, _, _) in active_inputs:
             entry = parsed_json.get(f"step_{inp_idx}", {})
-            attribution = str(entry.get("attribution", "UNKNOWN")).upper().strip()
-            # if attribution not in VALID_ATTRIBUTIONS:
-            #     attribution = "UNKNOWN"
+            attribution = str(entry.get('attribution')).strip()
+            if not attribution:
+                attribution = _quick_vllm(attr_tmpl.format(idx=inp_idx, text=text))
+            criticism = str(entry.get("criticism")).strip()
+            if not criticism:
+                criticism = _quick_vllm(crit_tmpl.format(idx=inp_idx, text=text))
+
             results[inp_idx] = {
                 "attribution": attribution,
-                "criticism":   str(entry.get("criticism", "")).strip(),
+                "criticism": criticism
             }
         return results
 
-    # --- fallback ---
+    # --- llm fallback ---
     for (_, inp_idx, _, _) in active_inputs:
         results[inp_idx] = {
-            "attribution": text, 
-            "criticism": text
+            "attribution": _quick_vllm(attr_tmpl.format(idx=inp_idx, text=text)), 
+            "criticism": _quick_vllm(crit_tmpl.format(idx=inp_idx, text=text)), 
         }
     return results
 
@@ -334,6 +348,26 @@ def load_and_prepare_data(
 # Phase 2 — process
 # ============================================================
 
+def _quick_vllm(prompt):
+    config = {
+        "model": "openai/gpt-oss-20b",
+        "temperature": 0.6,
+        "max_tokens": 4000,
+        "reasoning_effort": "low",
+        "hostname": "localhost",
+        "port": 8881,
+        "concurrent_requests": 16
+    }
+    hostname = config.pop("hostname")
+    port     = config.pop("port")
+    config.pop("concurrent_requests", None)
+    messages = [{'role': 'user', 'content': prompt}]
+
+    url = f"http://{hostname}:{port}/v1/chat/completions"
+    _, out, _ = send_request(url, config, {"messages": messages}, request_id=0)
+    return out['response']
+
+
 def _call_vllm(messages: list, config_path: str) -> Dict[str, str]:
     """Send a messages list to vLLM and return {reasoning, response}."""
     with open(config_path) as f:
@@ -410,7 +444,8 @@ def process_example(data: dict, config_path: str) -> dict:
                 'content': initial_criticism}
             ]
 
-    for log in logs:
+    # for log in logs:
+    for log_idx, log in enumerate(tqdm(logs, desc="Backpropagating...")):
         out_idx     = log["output_step_idx"]
         inp_idxs    = log["input_step_idxs"]
         out_node    = nodes[out_idx]
@@ -483,17 +518,7 @@ def process_all(
 
     for i, filename in enumerate(tqdm(subset, desc="Processing")):
         file_path = output_dir / filename
-        if not file_path.exists():
-            tqdm.write(f"[{start_idx + i}] ✗ missing skeleton: {filename}")
-            continue
-
         data = _load_json_data(file_path)
-        logs = data.get("logs", [])
-
-        if logs and all("response" in log for log in logs):
-            tqdm.write(f"[{start_idx + i}] skip (complete): {filename}")
-            continue
-
         completed = process_example(data, config_path)
         with open(file_path, "w", encoding="utf-8") as f:
             json.dump(completed, f, indent=4, ensure_ascii=False)
