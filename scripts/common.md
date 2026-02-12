@@ -138,3 +138,94 @@ curl -X POST http://localhost:8881/v1/chat/completions \
         "reasoning_effort": "high"
     }'
 ```
+
+```structure of the data
+outputs/gpt-oss-20b/text-grad/handcrafted/1.json
+    return {
+        'metadata': metadata,
+        'steps': [
+            {
+                'step_idx': step_idx,
+                'input_steps': [],
+                'output_steps': [],
+                'role': step.role,
+                'content': step.value,
+                'grad': node.grad, (grad should indicate where it receive downstream grad from)
+                'suspicion_score': node.suspicion_score,
+                'attribution': node.attribution
+            }
+            ...
+        ],
+
+        'logs': [{
+            prompt: 
+            reasoning: 
+            response:
+        }, ...],
+
+        'predictions': [{ <- from steps
+            step_idx: ...,
+            role: ...,
+            content: ...,
+            score: ...,
+            reason: ...,
+        }] 
+    }
+outputs/gpt-oss-20b/text-grad/all-at-once/1.json
+    return {
+        'metadata': metadata,
+        'steps': [
+            {
+                'step_idx': step_idx,
+                'input_steps': [],
+                'output_steps': [],
+                'role': step.role,
+                'content': step.value,
+            }
+            ...
+        ],
+
+        'logs': [{
+            prompt: 
+            reasoning: 
+            response:
+        }, ...],
+
+        'predictions': [{ <- from logs
+            step_idx: ...,
+            role: ...,
+            content: ...,
+            score: ...,
+            reason: ...,
+        }] 
+    }
+outputs/gpt-oss-20b/text-grad/step-by-step/1.json
+    return {
+        'metadata': metadata,
+        'steps': [
+            {
+                'step_idx': step_idx,
+                'input_steps': [],
+                'output_steps': [],
+                'role': step.role,
+                'content': step.value,
+                'is_decisive': ...,
+                'reason': ...
+            }
+            ...
+        ],
+        'logs': [{
+            prompt: 
+            reasoning: 
+            response:
+        }, ...],
+
+        'predictions': [{ <- from steps
+            step_idx: ...,
+            role: ...,
+            content: ...,
+            score: ...,
+            reason: ...,
+        }] 
+    }
+```

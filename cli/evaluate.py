@@ -65,14 +65,64 @@ def compute_acc(dir, k=1, save_path=None):
 
     return agent_acc, step_acc
 
+def sweep(save_path="sweep_results.tsv"):
+    """
+    Sweep over hardcoded configs and k values, saving results to CSV.
+    """
+    CONFIGS = [
+        "outputs/gpt-oss-20b/all-at-once/hand-crafted",
+        "outputs/gpt-oss-20b/step-by-step/hand-crafted",
+    ]
+    K_VALUES = [1, 3, 5, 10]
+
+    rows = []
+    for dir_path in CONFIGS:
+        # Parse readable labels from the path structure
+        parts = Path(dir_path).parts  # e.g. ('outputs', 'gpt-oss-20b', 'all-at-once', 'hand-crafted')
+        model    = parts[1] if len(parts) > 1 else dir_path
+        strategy = parts[2] if len(parts) > 2 else ""
+        subset   = parts[3] if len(parts) > 3 else ""
+
+        for k in K_VALUES:
+            agent_acc, step_acc = compute_acc(dir_path, k=k)
+            rows.append({
+                "model":      model,
+                "strategy":   strategy,
+                "subset":     subset,
+                "k":          k,
+                "agent_acc":  round(agent_acc, 2),
+                "step_acc":   round(step_acc, 2),
+            })
+
+    df = pd.DataFrame(rows, columns=["model", "strategy", "subset", "k", "agent_acc", "step_acc"])
+
+    # Pretty-print pivot: rows = configs, cols = k values (step_acc focus)
+    pivot = df.pivot_table(
+        index=["model", "strategy", "subset"],
+        columns="k",
+        values="step_acc",
+    )
+    pivot.columns = [f"step_acc@{k}" for k in pivot.columns]
+    print("\n--- Sweep Results (step_acc) ---")
+    print(pivot.to_string())
+
+    df.to_csv(save_path, sep="\t", index=False)
+    print(f"\nFull results saved to {save_path}")
+
+    return df
+
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--dir', required=True, help='Directory with prediction files')
+    parser.add_argument('--dir', help='Directory with prediction files')
     parser.add_argument('--k', type=int, default=1, help='Top-k accuracy (default: 1)')
     parser.add_argument('--save', help='Path to save results JSON')
+    parser.add_argument('--sweep', action='store_true', help='Run full sweep')
     args = parser.parse_args()
     
-    compute_acc(args.dir, args.k, args.save)
+    if args.sweep:
+        sweep(args.save or "sweep_results.tsv")
+    else:
+        compute_acc(args.dir, args.k, args.save)
 
 if __name__ == '__main__':
     main()

@@ -89,7 +89,7 @@ week 2:
 [ ] gain some insights about counterfactual reasoning
 
 week 3
-[ ] revamp the inference and evaluation for all-at-once and step-by-step to be cleaner.
+[x] revamp the inference and evaluation for all-at-once and step-by-step to be cleaner.
 outputs should look like this:
 outputs:
     - model-name
