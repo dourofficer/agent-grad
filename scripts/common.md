@@ -88,6 +88,7 @@ python -m utils.infer_agent_grad \
 ```
 ----------------------------------------------
 ```bash
+## INFERENCE
 python -m cli.inference \
     --method 'all_at_once' \
     --config 'configs/gpt-oss-20b.yaml' \
@@ -100,10 +101,15 @@ python -m cli.inference \
     --output 'outputs/gpt-oss-20b/step_by_step/hand-crafted' \
     --start_idx 0 --end_idx 2
 
+## MAKE PREDICTIONS
 python -m cli.predict \
     --dir outputs/gpt-oss-20b/all-at-once/hand-crafted \
     --method all_at_once
+python -m cli.predict \
+    --dir outputs/gpt-oss-20b/step-by-step/hand-crafted \
+    --method step_by_step
 
+## EVALUATION
 python -m cli.evaluate \
     --dir 'outputs/gpt-oss-20b/all-at-once/hand-crafted' \
     --k 1 \
@@ -138,94 +144,114 @@ curl -X POST http://localhost:8881/v1/chat/completions \
         "reasoning_effort": "high"
     }'
 ```
-
-```structure of the data
+```python
+"""
 outputs/gpt-oss-20b/text-grad/handcrafted/1.json
-    return {
-        'metadata': metadata,
-        'steps': [
-            {
-                'step_idx': step_idx,
-                'input_steps': [],
-                'output_steps': [],
-                'role': step.role,
-                'content': step.value,
-                'grad': node.grad, (grad should indicate where it receive downstream grad from)
-                'suspicion_score': node.suspicion_score,
-                'attribution': node.attribution
-            }
-            ...
-        ],
+"""
+return {
+    'metadata': metadata,
+    'steps': [
+        {
+            'step_idx': step_idx,
+            'input_steps': [],
+            'output_steps': [],
+            'role': step.role,
+            'content': step.value,
+            'grad': node.grad,  # grad should indicate where it receives downstream grad from
+            'suspicion_score': node.suspicion_score,
+            'attribution': node.attribution
+        },
+        # ...
+    ],
+    'logs': [
+        {
+            'messages': ...,
+            'reasoning': ...,
+            'response': ...,
+        },
+        # ...
+    ],
+    'predictions': [  # from steps
+        {
+            'step_idx': ...,
+            'role': ...,
+            'content': ...,
+            'score': ...,
+            'reason': ...,
+        },
+        # ...
+    ]
+}
 
-        'logs': [{
-            prompt: 
-            reasoning: 
-            response:
-        }, ...],
-
-        'predictions': [{ <- from steps
-            step_idx: ...,
-            role: ...,
-            content: ...,
-            score: ...,
-            reason: ...,
-        }] 
-    }
+"""
 outputs/gpt-oss-20b/text-grad/all-at-once/1.json
-    return {
-        'metadata': metadata,
-        'steps': [
-            {
-                'step_idx': step_idx,
-                'input_steps': [],
-                'output_steps': [],
-                'role': step.role,
-                'content': step.value,
-            }
-            ...
-        ],
+"""
+return {
+    'metadata': metadata,
+    'steps': [
+        {
+            'step_idx': step_idx,
+            'input_steps': [],
+            'output_steps': [],
+            'role': step.role,
+            'content': step.value,
+        },
+        # ...
+    ],
+    'logs': [
+        {
+            'messages': ...,
+            'reasoning': ...,
+            'response': ...,
+        },
+        # ...
+    ],
+    'predictions': [  # from logs
+        {
+            'step_idx': ...,
+            'role': ...,
+            'content': ...,
+            'score': ...,
+            'reason': ...,
+        },
+        # ...
+    ]
+}
 
-        'logs': [{
-            prompt: 
-            reasoning: 
-            response:
-        }, ...],
-
-        'predictions': [{ <- from logs
-            step_idx: ...,
-            role: ...,
-            content: ...,
-            score: ...,
-            reason: ...,
-        }] 
-    }
+"""
 outputs/gpt-oss-20b/text-grad/step-by-step/1.json
-    return {
-        'metadata': metadata,
-        'steps': [
-            {
-                'step_idx': step_idx,
-                'input_steps': [],
-                'output_steps': [],
-                'role': step.role,
-                'content': step.value,
-                'is_decisive': ...,
-                'reason': ...
-            }
-            ...
-        ],
-        'logs': [{
-            prompt: 
-            reasoning: 
-            response:
-        }, ...],
-
-        'predictions': [{ <- from steps
-            step_idx: ...,
-            role: ...,
-            content: ...,
-            score: ...,
-            reason: ...,
-        }] 
-    }
+"""
+return {
+    'metadata': metadata,
+    'steps': [
+        {
+            'step_idx': step_idx,
+            'input_steps': [],
+            'output_steps': [],
+            'role': step.role,
+            'content': step.value,
+            'is_decisive': ...,
+            'reason': ...
+        },
+        # ...
+    ],
+    'logs': [
+        {
+            'messages': ...,
+            'reasoning': ...,
+            'response': ...,
+        },
+        # ...
+    ],
+    'predictions': [  # from steps
+        {
+            'step_idx': ...,
+            'role': ...,
+            'content': ...,
+            'score': ...,
+            'reason': ...,
+        },
+        # ...
+    ]
+}
 ```

@@ -201,20 +201,21 @@ class Graph:
             
             # Build input info
             input_nodes = list(node._prev)
-            input_info = [(inp.role, inp.step_idx, inp.value) for inp in input_nodes]
-            
+            input_info = [(inp.role, inp.step_idx, inp.value, inp.requires_grad) for inp in input_nodes]
+            output_info = (node.role, node.step_idx, node.value)
             # Get the template builder for this node's role
             template_builder = ops.get_backward_template(node.role)
             
             # Create a format function that takes downstream_grad and returns the full prompt
-            def make_format_fn(builder, prob, gt, out_role, out_idx, out_val, inputs):
+            def make_format_fn(builder, prob, gt, output, inputs):
                 def format_fn(downstream_grad: str) -> str:
                     return builder(
                         problem=prob,
                         ground_truth=gt,
-                        output_role=out_role,
-                        output_idx=out_idx,
-                        output_value=out_val,
+                        # output_role=out_role,
+                        # output_idx=out_idx,
+                        # output_value=out_val,
+                        output=output,
                         inputs=inputs,
                         downstream_grad=downstream_grad,
                     )
@@ -224,9 +225,10 @@ class Graph:
                 template_builder,
                 self.problem,
                 self.ground_truth,
-                node.role,
-                node.step_idx,
-                node.value,
+                # node.role,
+                # node.step_idx,
+                # node.value,
+                output_info,
                 input_info,
             )
             
@@ -234,9 +236,10 @@ class Graph:
             prompt_template = template_builder(
                 problem=self.problem,
                 ground_truth=self.ground_truth,
-                output_role=node.role,
-                output_idx=node.step_idx,
-                output_value=node.value,
+                # output_role=node.role,
+                # output_idx=node.step_idx,
+                # output_value=node.value,
+                output=output_info,
                 inputs=input_info,
                 downstream_grad="{downstream_grad}",
             )
