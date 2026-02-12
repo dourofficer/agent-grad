@@ -77,128 +77,39 @@ week 2:
         - quite stuck here.
 
 [x] understand how GraphTracer build IDG for evaluation on who&when
-    > An LLM analyzes each step and infers: "Which prior steps did this agent likely depend on?" post-hoc.
+    -> An LLM analyzes each step and infers: "Which prior steps did this agent likely depend on?" post-hoc.
 [x] read AgentRX to know how they improved Who&When
-    > They re-defined what an error decisive step -> the first unrecoverable step
+    -> They re-defined what an error decisive step -> the first unrecoverable step
     This is more nuanced than Who&When because sometimes in their annotation, a failed
     step is later corrected, hence not the root cause of the failed trajectory.
-    > The method seems to be purely prompt-based, and they don't provide the dataset yet.
+    -> The method seems to be purely prompt-based, and they don't provide the dataset yet.
 [x] read GraphTracer 
-    > SOTA. this work indicate that leveraging graph structure of trajectory helps.
-    
-[ ] gain some insights about counterfactual reasoning
+    -> SOTA. this work indicate that leveraging graph structure of trajectory helps.
+    -> simply LLM(traj, graph) -> structured output.    
+[x] gain some insights about counterfactual reasoning
+    -> it's just three steps: abduct, act, and predict
 
 week 3
-[x] revamp the inference and evaluation for all-at-once and step-by-step to be cleaner.
-outputs should look like this:
-outputs:
-    - model-name
-        - method:
-            - subset
-                - 1.json {original, prompt, response}
-outputs/gpt-oss-20b/text-grad/handcrafted/1.json
-    return {
-        'metadata': metadata,
-        'steps': [
-            {
-                'step_idx': step_idx,
-                'input_steps': [],
-                'output_steps': [],
-                'role': step.role,
-                'content': step.value,
-                'grad': node.grad, (grad should indicate where it receive downstream grad from)
-                'suspicion_score': node.suspicion_score,
-                'attribution': node.attribution
-            }
-            ...
-        ],
 
-        'logs': [{
-            prompt: 
-            reasoning: 
-            response:
-        }, ...],
-
-        'predictions': [{ <- from steps
-            step_idx: ...,
-            role: ...,
-            content: ...,
-            score: ...,
-            reason: ...,
-        }] 
-    }
-outputs/gpt-oss-20b/text-grad/all-at-once/1.json
-    return {
-        'metadata': metadata,
-        'steps': [
-            {
-                'step_idx': step_idx,
-                'input_steps': [],
-                'output_steps': [],
-                'role': step.role,
-                'content': step.value,
-            }
-            ...
-        ],
-
-        'logs': [{
-            prompt: 
-            reasoning: 
-            response:
-        }, ...],
-
-        'predictions': [{ <- from logs
-            step_idx: ...,
-            role: ...,
-            content: ...,
-            score: ...,
-            reason: ...,
-        }] 
-    }
-outputs/gpt-oss-20b/text-grad/step-by-step/1.json
-    return {
-        'metadata': metadata,
-        'steps': [
-            {
-                'step_idx': step_idx,
-                'input_steps': [],
-                'output_steps': [],
-                'role': step.role,
-                'content': step.value,
-                'is_decisive': ...,
-                'reason': ...
-            }
-            ...
-        ],
-        'logs': [{
-            prompt: 
-            reasoning: 
-            response:
-        }, ...],
-
-        'predictions': [{ <- from steps
-            step_idx: ...,
-            role: ...,
-            content: ...,
-            score: ...,
-            reason: ...,
-        }] 
-    }
-
-[ ] count tokens of trajectories to set the right configurations
-[ ] use strong models to construct graphs and reuse.
-    [ ] maybe only do this for algorithm-generated
 [ ] improve the implementation of agent-grad:
-    [ ] parallel processes
+    [x] define output structure for easy data provenance and debug.
+        -> revamp the inference and evaluation for all-at-once and step-by-step to be cleaner.
+    [x] parallel processes for backpropagation in agent-grad
+    [x] somehow step 0 always is responsible. must be some bugs.
+        -> set step 0's requires_grad  = False
+    [ ] add direct text grad in cli.inference
+    [ ] count tokens of trajectories to set the right configurations
+    [ ] merge all inference methods into cli.inference
+    [ ] use strong models to construct graphs and reuse (algorithm-generated only?)
     [ ] aggregate gradient through LLM call to summarize.
-    [ ] somehow step 0 always is responsible. must be some bugs.
+    [ ] add making comprehensive report feature in cli.evaluate
+    [ ] extend evaluation on Algorithm-Generated subset
+    [ ] custom agent_step for different agents. maybe look into the ground truth explanation.
+    [ ] add automatic diagnosis: asking llm justification for groudtruth vs. predicted.
+    [ ] add Qwen backbone
 
-[ ] more comprehensive evaluation
-    [ ] add Algorithm-Generated subset
-    [ ] add Qwen
 [ ] analyze failure modes of naive text-grad
     why agent-grad fails?
     compare explanation by model & by annotator(s) in failed cases.
-
 [ ] (IMPORTANT) think of a scoring mechanisms
         

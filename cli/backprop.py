@@ -41,6 +41,7 @@ from agent_grad import Graph, agent_step, compute_loss, register_backward_templa
 from utils.vllm import send_request
 from utils.graph import MagenticOneTrajectoryParser
 from utils.prompting import _get_sorted_json_files, _load_json_data, _extract_metadata
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 
 # ============================================================
@@ -445,7 +446,7 @@ def process_example(data: dict, config_path: str) -> dict:
             ]
 
     # for log in logs:
-    for log_idx, log in enumerate(tqdm(logs, desc="Backpropagating...")):
+    for log_idx, log in enumerate(tqdm(logs, desc=f"Backpropagating ...")):
         out_idx     = log["output_step_idx"]
         inp_idxs    = log["input_step_idxs"]
         out_node    = nodes[out_idx]
@@ -525,34 +526,62 @@ def process_all(
         tqdm.write(f"[{start_idx + i}] ✓ processed: {filename}")
 
 
+
+def process_all_parallel(
+    output_dir: Path,
+    config_path: str,
+    start_idx: int = 0,
+    end_idx: Optional[int] = None,
+    max_workers: Optional[int] = None,
+) -> None:
+    """
+    Phase 2: iterate over skeleton files in `output_dir`, run inference,
+    and save the completed results back in-place.
+    """
+    filepaths = _get_sorted_json_files(str(output_dir))
+    end_idx   = end_idx or len(filepaths)
+    subset    = filepaths[start_idx:end_idx]
+
+    if max_workers is None:
+        with open(config_path) as f:
+            max_workers = yaml.safe_load(f).get("concurrent_requests", 8)
+
+    print(f"[process] {len(subset)} examples  ({start_idx}–{end_idx - 1})")
+    print(f"[process] config  → {config_path}")
+    print(f"[process] output  → {output_dir}")
+    print(f"[process] workers → {max_workers}\n")
+
+    def _process_one(i: int, filename: str) -> str:
+        file_path = output_dir / filename
+        data = _load_json_data(file_path)
+        completed = process_example(data, config_path)
+        tmp = file_path.with_suffix(".tmp")
+        with open(tmp, "w", encoding="utf-8") as f:
+            json.dump(completed, f, indent=4, ensure_ascii=False)
+        tmp.replace(file_path)
+        return f"[{start_idx + i}] ✓ processed: {filename}"
+
+    with ThreadPoolExecutor(max_workers=max_workers) as pool:
+        futures = {pool.submit(_process_one, i, fn): fn for i, fn in enumerate(subset)}
+        with tqdm(total=len(subset), desc="Processing ") as bar:
+            for future in as_completed(futures):
+                tqdm.write(future.result())
+                bar.update(1)
+
 # ============================================================
 # CLI
 # ============================================================
 
 def main():
-    parser = argparse.ArgumentParser(
-        description="Two-phase agent-grad inference  (--prepare / --process / both)"
-    )
-    parser.add_argument(
-        "--prepare", action="store_true",
-        help="Phase 1: build dependency graph and save prompt skeletons",
-    )
-    parser.add_argument(
-        "--process", action="store_true",
-        help="Phase 2: call vLLM and fill reasoning/response/grad",
-    )
-    parser.add_argument("--config", required=True,
-                        default="configs/gpt-oss-20b.yaml")
-    parser.add_argument("--input",  default="data/who-and-when/Hand-Crafted",
-                        help="Input directory with raw trajectory JSON files "
-                             "(required for --prepare)")
-    parser.add_argument("--output", default="outputs/gpt-oss-20b/text-grad/hand-crafted",
-                        help="Output directory for skeleton / completed JSON files")
-    parser.add_argument(
-        "--role_id", choices=["name", "role"], default="role",
-        help="Trajectory field for agent role "
-             "('role' for hand-crafted, 'name' for alg-generated)",
-    )
+    parser = argparse.ArgumentParser(description="Two-phase agent-grad inference  (--prepare / --process / both)")
+    parser.add_argument("--prepare", action="store_true", 
+        help="Phase 1: build dependency graph and save prompt skeletons",)
+    parser.add_argument("--process", action="store_true", 
+        help="Phase 2: call vLLM and fill reasoning/response/grad",)
+    parser.add_argument("--config", required=True, default="configs/gpt-oss-20b.yaml")
+    parser.add_argument("--input",  default="data/ww/hand-crafted",)
+    parser.add_argument("--output", default="outputs/gpt-oss-20b/text-grad/hand-crafted",)
+    parser.add_argument("--role_id", choices=["name", "role"], default="role")
     parser.add_argument("--start_idx", type=int, default=0)
     parser.add_argument("--end_idx",   type=int, default=None)
     args = parser.parse_args()
@@ -576,13 +605,13 @@ def main():
         )
 
     if run_process:
-        process_all(
+        # process_all(
+        process_all_parallel(
             output_dir=output_dir,
             config_path=args.config,
             start_idx=args.start_idx,
             end_idx=args.end_idx,
         )
-
 
 if __name__ == "__main__":
     main()
