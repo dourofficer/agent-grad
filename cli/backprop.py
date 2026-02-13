@@ -18,13 +18,13 @@ Example usage:
     python -m cli.backprop --process \
         --config configs/gpt-oss-20b.yaml \
         --input  data/ww/hand-crafted \
-        --output outputs/gpt-oss-20b/text-grad/hand-crafted
+        --output outputs/gpt-oss-20b/agent-grad/hand-crafted
 
     # Both phases in one go (default when neither flag is given)
     python -m cli.backprop \
         --config configs/gpt-oss-20b.yaml \
         --input  data/ww/hand-crafted \
-        --output outputs/gpt-oss-20b/text-grad/hand-crafted \
+        --output outputs/gpt-oss-20b/agent-grad/hand-crafted \
         --start_idx 0 --end_idx 10
 """
 
@@ -40,7 +40,7 @@ from typing import Any, Dict, List, Optional, Tuple
 from agent_grad import Graph, agent_step, compute_loss, register_backward_template
 from utils.vllm import send_request
 from utils.graph import MagenticOneTrajectoryParser
-from utils.prompting import _get_sorted_json_files, _load_json_data, _extract_metadata
+from utils.common import _get_sorted_json_files, _load_json_data, _extract_metadata
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
 
@@ -442,8 +442,8 @@ def process_example(data: dict, config_path: str) -> dict:
         if not nodes[first_out_idx].grad:
             nodes[first_out_idx].grad = [{
                 'from': 'output_loss', 
-                'content': initial_criticism}
-            ]
+                'content': initial_criticism
+            }]
 
     # for log in logs:
     for log_idx, log in enumerate(tqdm(logs, desc=f"Backpropagating ...")):

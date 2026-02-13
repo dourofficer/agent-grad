@@ -1,19 +1,26 @@
 """
 python -m cli.evaluate --dir 'outputs/gpt-oss-20b/all-at-once/hand-crafted' --k 1
 python -m cli.evaluate --dir 'outputs/gpt-oss-20b/step-by-step/hand-crafted' --k 1
+python -m cli.evaluate --dir 'outputs/gpt-oss-20b/agent-grad/hand-crafted' --k 1
+python -m cli.evaluate --save outputs/gpt-oss-20b/sweep_results.tsv --sweep
 """
 import json
 import os
 import argparse
 import pandas as pd
 from pathlib import Path
-from utils.prompting2 import _get_sorted_json_files, _load_json_data
+from utils.common import _get_sorted_json_files, _load_json_data
 
 def compute_acc(dir, k=1, save_path=None):
     """Compute accuracy@k for agent and step predictions."""
     result_dir = Path(dir)
     json_files = _get_sorted_json_files(result_dir)
-    data = [_load_json_data(result_dir / fp) for fp in json_files]
+    data = []
+    for filename in json_files:
+        file_data = _load_json_data(result_dir / filename)
+        file_data['metadata']['filename'] = filename
+        data.append(file_data)
+    # data = [_load_json_data(result_dir / fp) for fp in json_files]
 
     assert data and "predictions" in data[0], \
         "Data must contain 'predictions' field. Run infer_predictions first."
@@ -41,14 +48,14 @@ def compute_acc(dir, k=1, save_path=None):
     step_acc = (correct_step / total) * 100
 
     results = {
-        "k": k,
-        "total": total,
+        "k"            : k,
+        "total"        : total,
         "correct_agent": correct_agent,
-        "correct_step": correct_step,
-        "agent_acc": agent_acc,
-        "step_acc": step_acc,
+        "correct_step" : correct_step,
+        "agent_acc"    : agent_acc,
+        "step_acc"     : step_acc,
         "correct_files": correct_files,
-        "failed_files": failed_files
+        "failed_files" : failed_files
     }
 
     print(f"\n--- Accuracy@{k} ---")
@@ -72,6 +79,8 @@ def sweep(save_path="sweep_results.tsv"):
     CONFIGS = [
         "outputs/gpt-oss-20b/all-at-once/hand-crafted",
         "outputs/gpt-oss-20b/step-by-step/hand-crafted",
+        'outputs/gpt-oss-20b/agent-grad/hand-crafted',
+        'outputs/gpt-oss-20b/text-grad/hand-crafted',
     ]
     K_VALUES = [1, 3, 5, 10]
 

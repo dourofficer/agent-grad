@@ -95,11 +95,12 @@ week 3
     [x] define output structure for easy data provenance and debug.
         -> revamp the inference and evaluation for all-at-once and step-by-step to be cleaner.
     [x] parallel processes for backpropagation in agent-grad
+        -> with 24 threads, it now costs 1h30 instead of 4h30.
     [x] somehow step 0 always is responsible. must be some bugs.
         -> set step 0's requires_grad  = False
-    [ ] add direct text grad in cli.inference
-    [ ] count tokens of trajectories to set the right configurations
-    [ ] merge all inference methods into cli.inference
+    [x] add direct text grad in cli.inference
+    [x] count tokens of trajectories to set the right configurations
+        -> not really needed, just increase num_workers to 48.
     [ ] use strong models to construct graphs and reuse (algorithm-generated only?)
     [ ] aggregate gradient through LLM call to summarize.
     [ ] add making comprehensive report feature in cli.evaluate
@@ -107,9 +108,30 @@ week 3
     [ ] custom agent_step for different agents. maybe look into the ground truth explanation.
     [ ] add automatic diagnosis: asking llm justification for groudtruth vs. predicted.
     [ ] add Qwen backbone
+    [ ] merge all inference methods into cli.inference
 
-[ ] analyze failure modes of naive text-grad
-    why agent-grad fails?
-    compare explanation by model & by annotator(s) in failed cases.
+[ ] analyze the failures
+    model      	 strategy    	 subset      	 k 	 agent_acc	 step_acc
+    gpt-oss-20b	 all-at-once 	 hand-crafted	 10	     34.48	    24.14
+    gpt-oss-20b	 agent-grad  	 hand-crafted	 10	     46.55	    44.83
+    ---
+    gpt-oss-20b	 step-by-step	 hand-crafted	  1	     31.03	    18.97
+    gpt-oss-20b	 text-grad   	 hand-crafted	  1	     12.07	     3.45
+    gpt-oss-20b	 step-by-step	 hand-crafted	  3	     51.72	    41.38
+    gpt-oss-20b	 text-grad   	 hand-crafted	  3	     39.66	    20.69
+    gpt-oss-20b	 step-by-step	 hand-crafted	 10	     58.62	    51.72
+    gpt-oss-20b	 text-grad   	 hand-crafted	 10	     62.07	    53.45
+    ---
+    [ ] text-grad & step-by-step are basically the SAME strategy.
+        they reach the same level when k increases (k=10). however, when k is 
+        conventionally low (1,3,5), step-by-step ourperf text-grad 2x-6x.
+        -> there might be some error in definition of `decisive error` vs `root cause`
+        -> check definitions of ORIGINATING_ERROR, PROPAGATING_ERROR vs decisive error
+    ---
+    [ ] select 5 correct cases & 10 faled cases for inspection.
+    [ ] inspect how gradients get multiplied during chain rule
+    [ ] why it marks so many errors?
+    [ ] compare predicted reasons vs gold label reasons, what differ?
+
 [ ] (IMPORTANT) think of a scoring mechanisms
         

@@ -3,6 +3,8 @@ Docstring for cli.predict
 
 python -m cli.predict --dir outputs/gpt-oss-20b/step-by-step/hand-crafted --method step_by_step
 python -m cli.predict --dir outputs/gpt-oss-20b/all-at-once/hand-crafted --method all_at_once
+python -m cli.predict --dir outputs/gpt-oss-20b/text-grad/hand-crafted --method text_grad
+python -m cli.predict --dir outputs/gpt-oss-20b/agent-grad/hand-crafted --method agent_grad
 """
 
 import json
@@ -11,7 +13,7 @@ import re
 import argparse
 import pandas as pd
 from tqdm import tqdm
-from utils.prompting2 import _get_sorted_json_files, _load_json_data
+from utils.common import _get_sorted_json_files, _load_json_data
 
 def parse_llm_json_output(response_text):
     """ Matches patterns:
@@ -48,81 +50,132 @@ def parse_llm_json_output(response_text):
 
 def populate_predictions(output_dir, method='all_at_once'):
     json_files = _get_sorted_json_files(output_dir)
-    
-    for filename in tqdm(json_files, desc=f"Processing {method}"):
+
+    for filename in tqdm(json_files, desc=f"Populating predictions [{method}]"):
         file_path = os.path.join(output_dir, filename)
         data = _load_json_data(file_path)
         assert data is not None
-        
+
         logs = data.get('logs', [])
         steps = data.get('steps', [])
+
+        # Make sure the inference already happened.
         assert all('reasoning' in log for log in logs)
         assert all('response' in log for log in logs)
-        predictions = []
-        
-        if method == 'all_at_once':
-            # Extract the single LLM response
-            assert len(logs) == 1
-            response_text = logs[0].get('response', '')
-            parsed = parse_llm_json_output(response_text)
-            
-            # Get predicted step info
-            agent_name = parsed.get('agent_name', '')
-            step_number = parsed.get('step_number', -1)
-            reason = parsed.get('reason', '')
-            
-            # Build predictions list with scores for each step
-            for step in steps:
-                step_idx = step.get('step_idx', -1)
-                if step_idx == step_number:
-                    predictions.append({
-                        'step_idx': step_idx,
-                        'role': step.get('role', ''),
-                        'content': step.get('content', ''),
-                        'score': 1.0,
-                        'reason': reason
-                    })
-            
-            # Sort by step_idx
-            predictions = sorted(predictions, key=lambda x: x['step_idx'])
-        
-        elif method == 'step_by_step':
-            assert len(logs) >= 1
-            for log in logs:
-                step_idx = log.get('step_idx', -1)
-                response_text = log.get('response', '')
-                parsed = parse_llm_json_output(response_text)
-                
-                # Find corresponding step
-                step = next((s for s in steps if s.get('step_idx') == step_idx), {})
-                
-                is_decisive = parsed.get('is_decisive', False)
-                reason = parsed.get('reason')
-                step['is_decisve'] = is_decisive
-                step['reason'] = reason
-                if not is_decisive: continue
-                predictions.append({
-                    'step_idx': step_idx,
-                    'role': step.get('role'),
-                    'content': step.get('content'),
-                    'score': 1.0,
-                    'reason': reason
-                })
-            
-            # Sort by step_idx
-            predictions = sorted(predictions, key=lambda x: x['step_idx'])
-        
-        else:
-            raise ValueError(f"Unknown method: {method}")
-        
-        # Add predictions to data structure
+
+        steps_by_idx = {s['step_idx']: s for s in steps}
+
+        if method == 'all_at_once': predictions = _predictions_all_at_once(logs, steps_by_idx)
+        elif method == 'step_by_step': predictions = _predictions_step_by_step(logs, steps_by_idx)
+        elif method == 'text_grad': predictions = _predictions_text_grad(logs, steps_by_idx)
+        elif method == 'agent_grad': predictions = _predictions_agent_grad(logs, steps_by_idx)
+        else: raise ValueError(f"Unknown method: {method}")
+
         data['predictions'] = predictions
-        
-        # Save to output directory
-        output_path = os.path.join(output_dir, filename)
-        os.makedirs('lovely', exist_ok=True)
-        with open(output_path, 'w', encoding='utf-8') as f:
+
+        with open(file_path, 'w', encoding='utf-8') as f:
             json.dump(data, f, indent=4, ensure_ascii=False)
+
+
+def _predictions_all_at_once(logs, steps_by_idx):
+    assert len(logs) == 1
+    parsed = parse_llm_json_output(logs[0].get('response', ''))
+
+    predicted_idx = parsed.get('step_number', -1)
+    reason = parsed.get('reason', '')
+
+    step = steps_by_idx.get(predicted_idx)
+    if step is None:
+        return []
+
+    return [{
+        'step_idx': predicted_idx,
+        'role': step.get('role', ''),
+        'content': step.get('content', ''),
+        'score': 1.0,
+        'reason': reason,
+    }]
+
+
+def _predictions_step_by_step(logs, steps_by_idx):
+    predictions = []
+    for log in logs:
+        step_idx = log.get('step_idx', -1)
+        parsed = parse_llm_json_output(log.get('response', ''))
+
+        is_decisive = parsed.get('is_decisive', False)
+        reason = parsed.get('reason', '')
+
+        # annotate each step in-place. for debugging.
+        step = steps_by_idx.get(step_idx, {})
+        step['is_decisive'] = is_decisive  # also fixed the typo
+        step['reason'] = reason
+
+        if not is_decisive: continue
+
+        step = steps_by_idx.get(step_idx, {})
+        predictions.append({
+            'step_idx': step_idx,
+            'role': step.get('role', ''),
+            'content': step.get('content', ''),
+            'score': 1.0,
+            'reason': reason,
+        })
+
+    return sorted(predictions, key=lambda x: x['step_idx'])
+
+
+def _predictions_text_grad(logs, steps_by_idx):
+    """
+    direct textual grad
+    """
+    predictions = []
+    for log in logs:
+        step_idx = log.get('step_idx', -1)
+        parsed = parse_llm_json_output(log.get('response', ''))
+
+        attribution = parsed.get('attribution', 'UNKNOWN').upper()
+        criticism = parsed.get('criticism', '')
+
+        # annotate each step in-place. for debugging.
+        step = steps_by_idx.get(step_idx, {})
+        step['attribution'] = attribution  # also fixed the typo
+        step['criticism'] = criticism
+        
+        if attribution != 'ORIGINATING_ERROR': continue
+
+        step = steps_by_idx.get(step_idx, {})
+        predictions.append({
+            'step_idx': step_idx,
+            'role': step.get('role', ''),
+            'content': step.get('content', ''),
+            'score': 1.0,
+            'reason': criticism,
+        })
+
+    return sorted(predictions, key=lambda x: x['step_idx'])
+
+def _predictions_agent_grad(logs, steps_by_idx):
+    """
+    This one is a little special. Different from usual prompting.
+    """
+
+    predictions = []
+    steps = [v for k, v in steps_by_idx.items()]
+    for step in steps:
+        step_idx = step.get('step_idx', -1)
+        attributions = [attr['content'] for attr in step['attribution']]
+        if 'ORIGINATING_ERROR' not in attributions: continue
+
+        predictions.append({
+            'step_idx': step_idx,
+            'role': step.get('role'),
+            'content': step.get('content'),
+            'score': 1.0,
+            'reason': step.get('grad'),
+        })
+    return sorted(predictions, key=lambda x: x['step_idx'])
+
 
 def main():
     parser = argparse.ArgumentParser(
@@ -137,9 +190,8 @@ def main():
     parser.add_argument(
         '--method',
         type=str,
-        choices=['all_at_once', 'step_by_step'],
+        choices=['all_at_once', 'step_by_step', 'text_grad', 'agent_grad'],
         default='all_at_once',
-        help='Prediction method: all_at_once or step_by_step (default: all_at_once)'
     )
     
     args = parser.parse_args()

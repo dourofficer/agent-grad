@@ -17,6 +17,12 @@ python -m cli.inference --method 'all_at_once' \
     --input 'data/ww/hand-crafted' \
     --output 'outputs/gpt-oss-20b/all-at-once/hand-crafted' \
     --start_idx 0 --end_idx 10
+
+python -m cli.inference --method 'text_grad' \
+    --config 'configs/gpt-oss-20b.yaml' \
+    --input 'data/ww/hand-crafted' \
+    --output 'outputs/gpt-oss-20b/text-grad/hand-crafted' \
+    --start_idx 0 --end_idx 3
 """
 
 import json
@@ -26,11 +32,11 @@ from dotenv import load_dotenv
 import argparse
 
 from utils.vllm import run_inference
-from utils.prompting2 import (
+from utils.common import  _get_sorted_json_files, _load_json_data
+from utils.prompts import (
     get_prompt_all_at_once,
     get_prompt_step_by_step,
-    _get_sorted_json_files,
-    _load_json_data
+    get_prompt_text_grad
 )
 
 
@@ -65,7 +71,8 @@ def load_and_prepare_data(input_dir, method):
     """Load JSON files and apply prompting method."""
     prompt_funcs = {
         'all_at_once': get_prompt_all_at_once,
-        'step_by_step': get_prompt_step_by_step
+        'step_by_step': get_prompt_step_by_step,
+        'text_grad': get_prompt_text_grad
     }
     get_prompt = prompt_funcs[method]
     
@@ -91,7 +98,7 @@ def main():
     parser.add_argument("--method", required=True, 
                        choices=["all_at_once", "step_by_step", "binary_search", "text_grad"])
     parser.add_argument("--config", required=True, default="gpt-oss-20b.yaml")
-    parser.add_argument("--input", default="../data/who-and-when/Algorithm-Generated")
+    parser.add_argument("--input", default="../data/ww/hand-crafted")
     parser.add_argument("--output", default="./outputs")
     parser.add_argument("--api_key", default=None, help="Azure OpenAI API Key (unused for prompt generation)")
     parser.add_argument("--start_idx", type=int, default=0, help="Start index for batch processing")
