@@ -1,6 +1,7 @@
 """
 python -m cli.evaluate --dir 'outputs/gpt-oss-20b/all-at-once/hand-crafted' --k 1
 python -m cli.evaluate --dir 'outputs/gpt-oss-20b/step-by-step/hand-crafted' --k 1
+python -m cli.evaluate --dir 'outputs/gpt-oss-20b/text-grad/hand-crafted' --k 1
 python -m cli.evaluate --dir 'outputs/gpt-oss-20b/agent-grad/hand-crafted' --k 1
 python -m cli.evaluate --save outputs/gpt-oss-20b/sweep_results.tsv --sweep
 """
@@ -77,11 +78,16 @@ def sweep(save_path="sweep_results.tsv"):
     Sweep over hardcoded configs and k values, saving results to CSV.
     """
     CONFIGS = [
+        "outputs/gpt-oss-20b/all-at-once/long-context",
+        "outputs/gpt-oss-20b/step-by-step/long-context",
+        'outputs/gpt-oss-20b/agent-grad/long-context',
+        'outputs/gpt-oss-20b/text-grad/long-context',
         "outputs/gpt-oss-20b/all-at-once/hand-crafted",
         "outputs/gpt-oss-20b/step-by-step/hand-crafted",
         'outputs/gpt-oss-20b/agent-grad/hand-crafted',
         'outputs/gpt-oss-20b/text-grad/hand-crafted',
     ]
+
     K_VALUES = [1, 3, 5, 10]
 
     rows = []

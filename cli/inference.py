@@ -2,12 +2,6 @@
 Example usage:
 python -m cli.inference --method 'step_by_step' \
     --config 'configs/gpt-oss-20b.yaml' \
-    --input 'data/ww/algorithm-generated' \
-    --output 'outputs/gpt-oss-20b/all_at_once/algorithm-generated' \
-    --start_idx 0 --end_idx 1
-
-python -m cli.inference --method 'step_by_step' \
-    --config 'configs/gpt-oss-20b.yaml' \
     --input 'data/ww/hand-crafted' \
     --output 'outputs/gpt-oss-20b/step-by-step/hand-crafted' \
     --start_idx 0 --end_idx 10
@@ -23,6 +17,25 @@ python -m cli.inference --method 'text_grad' \
     --input 'data/ww/hand-crafted' \
     --output 'outputs/gpt-oss-20b/text-grad/hand-crafted' \
     --start_idx 0 --end_idx 3
+---
+
+python -m cli.inference --method 'step_by_step' \
+    --config 'configs/gpt-oss-20b.yaml' \
+    --input 'data/ww/algorithm-generated' \
+    --output 'outputs/gpt-oss-20b/step-by-step/algorithm-generated' \
+    --start_idx 0 --end_idx 1
+
+python -m cli.inference --method 'all_at_once' \
+    --config 'configs/gpt-oss-20b.yaml' \
+    --input 'data/ww/algorithm-generated' \
+    --output 'outputs/gpt-oss-20b/all-at-once/algorithm-generated' \
+    --start_idx 0 --end_idx 1
+
+python -m cli.inference --method 'text_grad' \
+    --config 'configs/gpt-oss-20b.yaml' \
+    --input 'data/ww/algorithm-generated' \
+    --output 'outputs/gpt-oss-20b/text-grad/algorithm-generated' \
+    --start_idx 0 --end_idx 1
 """
 
 import json

@@ -2,6 +2,8 @@ import os
 import json
 import re
 import yaml
+import shutil
+from pathlib import Path
 from tqdm import tqdm
 from utils.vllm import send_request
 from rich.console import Console
@@ -82,3 +84,24 @@ def _call_vllm(messages: list, config_path: str) -> Dict[str, str]:
     url = f"http://{hostname}:{port}/v1/chat/completions"
     _, out, _ = send_request(url, config, {"messages": messages}, request_id=0)
     return {"reasoning": out["reasoning"], "response": out["response"]}
+
+
+def copy_long_context_files(result_dir="outputs/gpt-oss-20b", threshold=50):
+    
+    def is_long(dir, filename, threshold=50):
+        filepath = dir / filename
+        data = _load_json_data(filepath)
+        num_steps = len(data['steps'])
+        return num_steps >= threshold
+    
+    result_dir = Path(result_dir)
+    methods = ['all-at-once', 'step-by-step', 'text-grad', 'agent-grad']
+    for method in methods:
+        print(f'extracting long files: {method}')
+        input_dir = result_dir / f"{method}/hand-crafted"
+        output_dir = result_dir / f"{method}/long-context"
+        output_dir.mkdir(parents=True, exist_ok=True)
+        all_files = _get_sorted_json_files(input_dir)
+        long_files = [filename for filename in all_files if is_long(input_dir, filename, threshold)]
+        for filename in long_files:
+            shutil.copy(input_dir / filename, output_dir / filename)

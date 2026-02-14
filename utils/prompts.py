@@ -23,10 +23,20 @@ def get_prompt_all_at_once(data):
         for i, entry in enumerate(chat_history)
     ])
 
+    # only algorithm-generated will have system description.
+    system_desc = data.get("system_prompt", {})
+    system_text = ''
+    if system_desc:
+        agents_description = SEP.join(
+            f" * {k}: {v.strip('## Your role').strip()}"  for k, v in system_desc.items()
+        )
+        system_text = f"Agentic System Description\n{agents_description}\n\n"
+
     prompt = (
         "You are an AI assistant tasked with analyzing a multi-agent conversation history generated during the resolution of a complex problem.\n"
         f"The Problem: {problem}\n"
         f"The Ground Truth Answer: {ground_truth}\n\n"
+        f"{system_text}"
         "Task: Identify which agent made an error, the specific step number where the error occurred, and the reason for the error.\n"
         "Here is the conversation:\n\n" + chat_content + "\n\n"
         "Based on the conversation above, provide the following predictions in a strict JSON format:\n"
@@ -79,12 +89,22 @@ def get_prompt_step_by_step(data):
         for i, entry in enumerate(chat_history)
     ])
 
+    # only algorithm-generated will have system description.
+    system_desc = data.get("system_prompt", {})
+    system_text = ''
+    if system_desc:
+        agents_description = SEP.join(
+            f" * {k}: {v.strip('## Your role').strip()}"  for k, v in system_desc.items()
+        )
+        system_text = f"Agentic System Description\n{agents_description}\n\n"
+
     logs = []
     for idx, entry in enumerate(chat_history):
         prompt = (
             "You are an AI assistant tasked with analyzing a multi-agent conversation history generated during the resolution of a complex problem.\n"
             f"The Problem: {problem}\n"
             f"The Ground Truth Answer: {ground_truth}\n\n"
+            f"{system_text}"
             f"Here is the conversation:\n\n{chat_content}\n\n" 
             f"Task: Determine whether STEP {idx} (performed by {entry.get('role')}) is an decisive error step. "
             "A decisive error step is a mistake step where, if corrected, with all following steps are adjusted accordingly, the system would succeed. "
@@ -164,6 +184,14 @@ def get_prompt_text_grad(data):
     )
     # import pdb; pdb.set_trace()
 
+    system_desc = data.get("system_prompt", {})
+    system_text = ''
+    if system_desc:
+        agents_description = SEP.join(
+            f" * {k}: {v.strip('## Your role').strip()}"  for k, v in system_desc.items()
+        )
+        system_text = f"Agentic System Description\n{agents_description}\n\n"
+
     logs = []
     for idx, entry in enumerate(chat_history):
         task = TASK_TEMPLATE
@@ -172,6 +200,7 @@ def get_prompt_text_grad(data):
             "generated during the resolution of a complex problem.\n"
             f"The Problem: {problem}\n"
             f"The Ground Truth Answer: {ground_truth}\n\n"
+            f"{system_text}"
             f"Here is the conversation:\n\n{chat_content}\n\n"
             f"Task: Analyze how STEP {idx} (performed by {entry.get('role', 'Unknown Agent')}) contributed to the failure of the final output.\n\n"
             f"{task}"

@@ -128,8 +128,11 @@ week 3
         -> there might be some error in definition of `decisive error` vs `root cause`
         -> check definitions of ORIGINATING_ERROR, PROPAGATING_ERROR vs decisive error
     ---
+    [ ] analyze long trajectories. this might be where agent-grad show stronger performance.
+        -> trajectories with > 50 steps: 23 / 58
     [ ] select 5 correct cases & 10 faled cases for inspection.
-    [ ] inspect how gradients get multiplied during chain rule
+    [-] inspect how gradients get multiplied during chain rule
+        priority now:
     [ ] why it marks so many errors?
     [ ] compare predicted reasons vs gold label reasons, what differ?
 
