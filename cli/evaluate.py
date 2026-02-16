@@ -1,8 +1,14 @@
 """
 python -m cli.evaluate --dir 'outputs/gpt-oss-20b/all-at-once/hand-crafted' --k 1
 python -m cli.evaluate --dir 'outputs/gpt-oss-20b/step-by-step/hand-crafted' --k 1
-python -m cli.evaluate --dir 'outputs/gpt-oss-20b/text-grad/hand-crafted' --k 1
-python -m cli.evaluate --dir 'outputs/gpt-oss-20b/agent-grad/hand-crafted' --k 1
+python -m cli.evaluate --dir 'outputs/gpt-oss-20b/text-grad/hand-crafted' --k 5 \
+    --save outputs/gpt-oss-20b/results_text-grad_hand-crafted.json
+python -m cli.evaluate --dir 'outputs/gpt-oss-20b/agent-grad/hand-crafted' --k 5 \
+    --save outputs/gpt-oss-20b/results_agent-grad_hand-crafted.json
+
+python -m cli.evaluate --dir 'outputs/gpt-oss-20b/step-by-step/algorithm-generated' --k 1 \
+    --save outputs/gpt-oss-20b/results_step-by-step_algorithm-generated.json
+
 python -m cli.evaluate --save outputs/gpt-oss-20b/sweep_results.tsv --sweep
 """
 import json

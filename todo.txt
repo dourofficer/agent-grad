@@ -89,9 +89,9 @@ week 2:
 [x] gain some insights about counterfactual reasoning
     -> it's just three steps: abduct, act, and predict
 
-week 3
+week 3 & 4
 
-[ ] improve the implementation of agent-grad:
+[ ] IMPROVE the implementation of agent-grad:
     [x] define output structure for easy data provenance and debug.
         -> revamp the inference and evaluation for all-at-once and step-by-step to be cleaner.
     [x] parallel processes for backpropagation in agent-grad
@@ -101,16 +101,24 @@ week 3
     [x] add direct text grad in cli.inference
     [x] count tokens of trajectories to set the right configurations
         -> not really needed, just increase num_workers to 48.
-    [ ] use strong models to construct graphs and reuse (algorithm-generated only?)
+    [x] use strong models to construct graphs and reuse (algorithm-generated only?)
+    [ ] support pre-built graph
+    [ ] add uninformative loss (no ground truth)
+    [ ] improve textual gradient definition via prompting.
     [ ] aggregate gradient through LLM call to summarize.
-    [ ] add making comprehensive report feature in cli.evaluate
+    [x] add making comprehensive report feature in cli.evaluate
     [ ] extend evaluation on Algorithm-Generated subset
     [ ] custom agent_step for different agents. maybe look into the ground truth explanation.
     [ ] add automatic diagnosis: asking llm justification for groudtruth vs. predicted.
     [ ] add Qwen backbone
     [ ] merge all inference methods into cli.inference
 
-[ ] analyze the failures
+[ ] IMPORTANT key design changes:
+    [ ] think of a scoring mechanisms. maybe LLM(all gradients) -> ranks.
+    [ ] backpropagation only produces textual gradients. no coarse categorization like the current version.
+    [ ] derive a global memory mechanism to help with the gradient vanishing (?)
+
+[x] analyze early results
     model      	 strategy    	 subset      	 k 	 agent_acc	 step_acc
     gpt-oss-20b	 all-at-once 	 hand-crafted	 10	     34.48	    24.14
     gpt-oss-20b	 agent-grad  	 hand-crafted	 10	     46.55	    44.83
@@ -122,19 +130,18 @@ week 3
     gpt-oss-20b	 step-by-step	 hand-crafted	 10	     58.62	    51.72
     gpt-oss-20b	 text-grad   	 hand-crafted	 10	     62.07	    53.45
     ---
-    [ ] text-grad & step-by-step are basically the SAME strategy.
+    [-] text-grad & step-by-step are basically the SAME strategy.
         they reach the same level when k increases (k=10). however, when k is 
         conventionally low (1,3,5), step-by-step ourperf text-grad 2x-6x.
         -> there might be some error in definition of `decisive error` vs `root cause`
         -> check definitions of ORIGINATING_ERROR, PROPAGATING_ERROR vs decisive error
-    ---
+
+[ ] analyze failures
     [ ] analyze long trajectories. this might be where agent-grad show stronger performance.
         -> trajectories with > 50 steps: 23 / 58
     [ ] select 5 correct cases & 10 faled cases for inspection.
-    [-] inspect how gradients get multiplied during chain rule
-        priority now:
-    [ ] why it marks so many errors?
-    [ ] compare predicted reasons vs gold label reasons, what differ?
+    [ ] inspect how gradients get multiplied / propagated during chain rule
+    [ ] inspect compare predicted reasons vs gold label reasons, what differ?
+    [ ] inspect why some chains are marked with many (consecutive) ORIGINATING_ERROR
 
-[ ] (IMPORTANT) think of a scoring mechanisms
-        
+

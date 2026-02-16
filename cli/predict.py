@@ -5,6 +5,8 @@ python -m cli.predict --dir outputs/gpt-oss-20b/step-by-step/hand-crafted --meth
 python -m cli.predict --dir outputs/gpt-oss-20b/all-at-once/hand-crafted --method all_at_once
 python -m cli.predict --dir outputs/gpt-oss-20b/text-grad/hand-crafted --method text_grad
 python -m cli.predict --dir outputs/gpt-oss-20b/agent-grad/hand-crafted --method agent_grad
+
+python -m cli.predict --dir outputs/gpt-oss-20b/step-by-step/algorithm-generated --method step_by_step
 """
 
 import json
