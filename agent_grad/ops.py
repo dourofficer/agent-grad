@@ -236,23 +236,27 @@ def agent_step(
             inputs=input_info,
             downstream_grad=downstream_grad,
         )
-        
-        if llm_fn is not None:
-            # Execute backward with LLM
-            response = llm_fn(prompt)
-            parsed = parse_backward_response(response, input_info)
+
+        # if llm_fn is not None:
+        #     # Execute backward with LLM
+        #     response = llm_fn(prompt)
+        #     parsed = parse_backward_response(response, input_info)
             
-            # Accumulate gradients to each input
-            for inp in inputs:
-                if inp.step_idx in parsed:
-                    result = parsed[inp.step_idx]
-                    inp.grad.append(result['criticism'])
-                    inp.suspicion_score += result['severity_score']
-        else:
-            # Without LLM, just propagate the prompt as the gradient
-            # This allows for manual/deferred execution
-            for inp in inputs:
-                inp.grad.append(f"[Backward prompt for step {inp.step_idx}]:\n{prompt}")
+        #     # Accumulate gradients to each input
+        #     for inp in inputs:
+        #         if inp.step_idx in parsed:
+        #             result = parsed[inp.step_idx]
+        #             inp.grad.append(result['criticism'])
+        #             inp.suspicion_score += result['severity_score']
+        # else:
+        #     # Without LLM, just propagate the prompt as the gradient
+        #     # This allows for manual/deferred execution
+        #     for inp in inputs:
+        #         inp.grad.append(f"[Backward prompt for step {inp.step_idx}]:\n{prompt}")
+
+        raise NotImplementedError
+        
+
     
     out._backward = _backward
     out._prev = set(inputs)

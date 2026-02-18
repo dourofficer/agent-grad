@@ -21,10 +21,16 @@ Example usage:
         --output outputs/gpt-oss-20b/agent-grad/hand-crafted
 
     # Both phases in one go (default when neither flag is given)
-    python -m cli.backprop \
+    python -m cli.backprop2 \
         --config configs/gpt-oss-20b.yaml \
-        --input  data/ww/hand-crafted \
-        --output outputs/gpt-oss-20b/agent-grad/hand-crafted \
+        --input  data/ww/short-context \
+        --output outputs/gpt-oss-20b/agent-grad/short-context \
+        --start_idx 0 --end_idx 10
+
+    python -m cli.backprop2 \
+        --config configs/gpt-oss-20b.yaml \
+        --input  data/ww/long-context \
+        --output outputs/gpt-oss-20b/agent-grad/long-context \
         --start_idx 0 --end_idx 10
 """
 
@@ -37,7 +43,7 @@ from tqdm import tqdm
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
-from agent_grad import Graph, agent_step, compute_loss, register_backward_template
+from agent_grad import Graph, Tensor, agent_step, register_backward_template
 from utils.vllm import send_request
 from utils.graph import MagenticOneTrajectoryParser
 from utils.common import _get_sorted_json_files, _load_json_data, _extract_metadata
@@ -45,75 +51,166 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 
 
 # ============================================================
-# Prompt builder & response parser  (severity-free)
+# Backpropagation logic
 # ============================================================
 
-def build_generic_backward_prompt(
+def _toposort(graph) -> List[Tensor]:
+    """Topological sort starting from loss node."""
+    visited = set()
+    order = []
+    
+    def dfs(node):
+        if node in visited:
+            return
+        visited.add(node)
+        for prev in node._prev:
+            dfs(prev)
+        order.append(node)
+    
+    loss = graph.get_loss()
+    if loss:
+        dfs(loss)
+    else:
+        for n in graph.nodes:
+            dfs(n)
+    
+    return order
+
+def linearize(graph) -> List[Dict[str, Any]]:
+    """
+    Linearize the backward pass into a list of prompt templates.
+    
+    Instead of recursively calling _backward(), this returns a list
+    of templates that can be executed sequentially with an LLM.
+    """
+    
+    topo = _toposort(graph)
+    backward_order = list(reversed(topo))
+    
+    templates = []
+    
+    for node in backward_order:
+        # Skip nodes with no predecessors (nothing to backprop to)
+        if not node._prev:
+            continue
+        
+        # Build input info
+        input_nodes = list(node._prev)
+        input_info = [(inp.role, inp.step_idx, inp.value, inp.requires_grad) 
+                      for inp in input_nodes]
+        output_info = (node.role, node.step_idx, node.value)
+        # Get the template builder for this node's role
+        template_builder = build_backward_prompt
+        
+        # Also create the template with placeholder for inspection
+        prompt_template = template_builder(
+            problem=graph.problem,
+            ground_truth=graph.ground_truth,
+            output=output_info,
+            inputs=input_info,
+            downstream_grad="{downstream_grad}",
+        )
+        
+        templates.append({
+            'prompt_template': prompt_template,
+            'output_node': node,
+            'input_nodes': input_nodes,
+            'input_info': input_info,
+        })
+    
+    return templates
+
+# ============================================================
+# Prompt builder & response parser  (severity-free)
+# ============================================================
+MAGENTIC_ONE = """
+* Orchestrator: The lead agent, the Orchestrator is responsible for high-level planning, directing specialized agents, tracking progress, updating states and ledgers, and error recovery. As the Orchestrator operates, its planning can be generic or lack of specificity as long as it is not wrong.
+
+* Assistant: This LLM-based agent is specialized in writing code, analyzing information collected by other agents, and creating new artifacts. It can author new programs and is capable of debugging its own code when provided with console output.
+
+* ComputerTerminal: This agent is deterministic and does not use an LLM. Computer terminal performs no other action than running Python scripts (provided to it quoted in ```python code blocks), or sh shell scripts (provided to it quoted in ```sh code blocks)
+
+* WebSurfer: This highly specialized LLM-based agent is proficient in managing a Chromium-based web browser. It receives natural-language requests and maps them to actions such as visiting URLs, performing web searches, clicking elements, typing into forms, and scrolling. It can also perform "reading actions" like summarizing content or answering questions about a document. For visual grounding, it uses "set-of-marks" prompting on annotated screenshots to interact with specific page elements. It can also be asked to sleep and wait for pages to load, in cases where the pages seem to be taking a while to load.
+
+* FileSurfer: Similar in design to the WebSurfer, the FileSurfer commands a custom markdown-based file preview application instead of a web browser. This read-only application supports a wide range of file types, including PDFs, Office documents, images, videos, and audio. The FileSurfer can navigate folder structures and list directory contents to locate and process information within local files.
+""".strip()
+
+def build_backward_prompt(
     problem: str,
     ground_truth: str,
-    output: Tuple[str, int, str], # (role, idx, value)
-    inputs: List[Tuple[str, int, str, bool]],  # (role, idx, value, requires_grad)
+    output: Tuple[str, int, str],
+    inputs: List[Tuple[str, int, str, bool]],
     downstream_grad: str,
 ) -> str:
-    """
-    Build a backward prompt that asks for attribution + criticism only (no severity).
-    The model must return one JSON key per input step.
-    """
     output_role, output_idx, output_value = output
-    INPUTS = "\n---\n".join(
-        f"**Input {i}** — Step {inp_idx} ({inp_role}) - Taking gradient: {inp_requires_grad}.\n{inp_value}"
-        for i, (inp_role, inp_idx, inp_value, inp_requires_grad) in enumerate(inputs)
+    active = [(role, idx, val) for role, idx, val, rg in inputs if rg]
+
+    inputs_block = "\n---\n".join(
+        f"**Step {idx} ({role})**\n{val}" for role, idx, val in active
     )
-
     json_template = {
-        f"step_{inp_idx}": {
-            "attribution": "ORIGINATING_ERROR | PROPAGATING_ERROR | NEITHER",
-            "criticism":   "Your detailed analysis here.",
+        f"step_{idx}": {
+            "jacobian": f"How step {idx} influenced step {output_idx}'s output.",
+            "gradient": f"How step {idx} contributed to the failure and what should change.",
         }
-        for (_, inp_idx, _, requires_grad) in inputs
-        if requires_grad
+        for _, idx, _ in active
     }
-    EXAMPLE_OUTPUT = json.dumps(json_template, indent=2)
 
-    return f"""You are analyzing a failure in a multi-agent system.
+    return f"""You are performing a backward pass through a failed multi-agent computation graph.
 
 ## Context
-PROBLEM: {problem}
-GROUND TRUTH: {ground_truth}
+Problem: {problem}
+Ground truth: {ground_truth}
+System: {MAGENTIC_ONE}
 
-## Output Under Analysis
-Agent "{output_role}" (Step {output_idx}) produced:
+## Output Node — Step {output_idx} ({output_role})
 ```
 {output_value}
 ```
 
-## Inputs That Led to This Output
-{INPUTS}
+## Input Nodes — predecessors of Step {output_idx}
+{inputs_block}
 
-## Downstream Criticism
-The following criticism was identified for the output of Step {output_idx}:
+## Downstream Gradient — how Step {output_idx} contributed to the failure
 ```
 {downstream_grad}
 ```
 
-## Your Task
-For EACH input step listed above that takes gradient, determine how it contributed to the output's failure.
+## Task
+For each input step, compute in order:
 
-**ATTRIBUTION guide**:
-- **ORIGINATING_ERROR**: The error was created in this step. If this step were corrected, \
-downstream failures would likely be prevented.
-- **PROPAGATING_ERROR**: This step forwarded an error that originated earlier. It did not \
-create the mistake, but it failed to catch or correct it.
-- **NEITHER**: This step is correct, or any errors appeared only in later steps.
+**1. Jacobian (dy/dx) — factual influence only, no failure judgments**
+- What content from this input did Step {output_idx} use, and how (adopted directly / transformed / partially / ignored)?
+- How sensitive is Step {output_idx}'s output to this input?
 
-**CRITICISM guide**:
-- For ORIGINATING_ERROR or PROPAGATING_ERROR: explain (1) how this step caused or forwarded \
-the problem, and (2) what a correct version of this step would look like.
-- For NEITHER: briefly confirm why the step is correct in this context.
+**2. Gradient (dL/dx) — compose jacobian with downstream gradient**
+- Trace the causal chain: which content from this input flowed into the problematic aspects of Step {output_idx}'s output identified by the downstream gradient?
+- If the input contributed to the failure: describe what a correct version would contain — be specific enough that the correction is unambiguous. Account for the agent's actual responsibility (e.g., an Orchestrator giving underspecified instructions is not an error; misinterpreting its inputs is).
+- If the input did not contribute to the failure: state this explicitly with a justification.
 
-## Required Output Format
-Respond with ONLY a valid JSON object — no preamble, no markdown fences:
-{EXAMPLE_OUTPUT}""".strip()
+## Notes
+- Ground your judgement with evidence presented in the content of each step. Don't make assumption if there is no evidence given.
+- Always refer to steps by their indices (e.g., "Step {output_idx}", "Step N") to maintain unambiguous references. 
+
+## Output
+Respond with ONLY a valid JSON object, no preamble or markdown:
+{json.dumps(json_template, indent=2)}""".strip()
+
+
+def initial_loss(final_output: Tensor, expected: str, problem: str) -> str:
+    """
+    Compute initial "loss" as textual criticism.
+    This is the starting gradient for backpropagation.
+    """
+    return f"""FAILURE DETECTED
+
+The multi-agent system attempted to solve:
+{problem}
+
+Expected answer: {expected}
+
+The system FAILED to produce the correct result. 
+Trace back through the reasoning chain to find where errors originated."""
 
 
 def parse_backward_response(
@@ -124,14 +221,13 @@ def parse_backward_response(
     Parse the LLM backward response into {step_idx: {attribution, criticism}}.
     Falls back to regex when the response is not valid JSON.
     """
-    VALID_ATTRIBUTIONS = {"ORIGINATING_ERROR", "PROPAGATING_ERROR", "NEITHER"}
-    attr_tmpl = (
-        "Extract the attribution value for step {idx} from the following text: {text} "
+    gradient_tmpl = (
+        "Extract the gradient value for step {idx} from the following text: {text} "
         "Extract verbatim and return your answer directly without explanation, no preamble. "
         "If the information is not present, return 'UNKNOWN' only."
     )
-    crit_tmpl = (
-        "Extract the criticism value for step {idx} from the following text: {text} "
+    jacobian_tmpl = (
+        "Extract the jacobian value for step {idx} from the following text: {text} "
         "Extract verbatim and return your answer directly without explanation, no preamble. "
         "If the information is not present, return 'UNKNOWN' only."
     )
@@ -155,24 +251,24 @@ def parse_backward_response(
     if parsed_json is not None:
         for (_, inp_idx, _, _) in active_inputs:
             entry = parsed_json.get(f"step_{inp_idx}", {})
-            attribution = str(entry.get('attribution')).strip()
-            if not attribution:
-                attribution = _quick_vllm(attr_tmpl.format(idx=inp_idx, text=text))
-            criticism = str(entry.get("criticism")).strip()
-            if not criticism:
-                criticism = _quick_vllm(crit_tmpl.format(idx=inp_idx, text=text))
+            jacobian = str(entry.get('jacobian')).strip()
+            if not jacobian:
+                jacobian = _quick_vllm(jacobian_tmpl.format(idx=inp_idx, text=text))
+            gradient = str(entry.get("gradient")).strip()
+            if not gradient:
+                gradient = _quick_vllm(gradient_tmpl.format(idx=inp_idx, text=text))
 
             results[inp_idx] = {
-                "attribution": attribution,
-                "criticism": criticism
+                "jacobian": jacobian,
+                "gradient": gradient
             }
         return results
 
     # --- llm fallback ---
     for (_, inp_idx, _, _) in active_inputs:
         results[inp_idx] = {
-            "attribution": _quick_vllm(attr_tmpl.format(idx=inp_idx, text=text)), 
-            "criticism": _quick_vllm(crit_tmpl.format(idx=inp_idx, text=text)), 
+            "jacobian": _quick_vllm(jacobian_tmpl.format(idx=inp_idx, text=text)), 
+            "gradient": _quick_vllm(gradient_tmpl.format(idx=inp_idx, text=text)), 
         }
     return results
 
@@ -243,22 +339,41 @@ def prepare_example(example: dict, role_id: str = "role") -> dict:
             ground_truth=ground_truth,
             llm_fn=None,
         )
+        # first step is human input, no gradient.
         if i == 0:
             node.requires_grad = False
         nodes.append(node)
+
+    # add a loss node
+    loss_idx = len(trajectory)
+    dependencies[loss_idx] = [loss_idx - 1]
+    successors[loss_idx] = []
+    loss_node = agent_step(
+        inputs=[nodes[-1]],
+        output_value=None,
+        output_role="loss",
+        output_idx=len(trajectory),
+        problem=problem,
+        ground_truth=ground_truth,
+        llm_fn=None,
+    )
+    nodes.append(loss_node)
 
     # seed the loss gradient on the final node
     graph = Graph(problem=problem, ground_truth=ground_truth)
     graph.nodes = nodes
     graph.set_loss(nodes[-1])
 
-    initial_criticism = compute_loss(
+    initial_criticism = initial_loss(
         final_output=nodes[-1],
         expected=ground_truth,
         problem=problem,
     )
-    templates = graph.linearize()
-    templates[0]["output_node"].grad = [{'from': 'output_loss', 'content': initial_criticism}]
+    templates = linearize(graph)
+    initial_template = templates[0]['prompt_template'].replace(
+        "{downstream_grad}", initial_criticism
+    )
+    templates[0]['prompt_template'] = initial_template
 
     # steps
     steps = [
@@ -270,34 +385,17 @@ def prepare_example(example: dict, role_id: str = "role") -> dict:
             "content":      node.value,
             "requires_grad": node.requires_grad,
             "grad":         [],
-            "attribution":  [],
         }
         for node in nodes
     ]
+    steps[-1]['grad'] = [{'jacobian': None, 'gradient': initial_criticism}]
 
     # logs — one per backward template, in backward order
     logs = []
     for t_idx, template in enumerate(templates):
         output_node = template["output_node"]
         input_nodes = template["input_nodes"]
-        input_info  = template["input_info"]   # [(role, idx, value, requires_grad)]
-        output_info = (output_node.role, output_node.step_idx, output_node.value)
-
-        # Only the first template has a real gradient at prepare-time.
-        # The rest will be re-rendered in process_example with live accumulated grads.
-        if t_idx == 0:
-            grad_contents = [g['content'] for g in output_node.grad]
-            gradient = "\n---\n".join(grad_contents)
-        else:
-            gradient = "{downstream_grad}"
-
-        prompt = build_generic_backward_prompt(
-            problem=problem,
-            ground_truth=ground_truth,
-            output=output_info,
-            inputs=input_info,
-            downstream_grad=gradient,
-        )
+        prompt = template['prompt_template']
         messages = [
             {"role": "system", "content": "You are a helpful assistant."},
             {"role": "user",   "content": prompt},
@@ -334,10 +432,6 @@ def load_and_prepare_data(
 
     for i, filename in enumerate(tqdm(subset, desc="Preparing")):
         output_path = output_dir / filename
-        # if output_path.exists():
-        #     tqdm.write(f"[{start_idx + i}] skip (exists): {filename}")
-        #     continue
-
         example = _load_json_data(Path(input_dir) / filename)
         skeleton = prepare_example(example, role_id=role_id)
         with open(output_path, "w", encoding="utf-8") as f:
@@ -351,7 +445,7 @@ def load_and_prepare_data(
 
 def _quick_vllm(prompt):
     config = {
-        "model": "openai/gpt-oss-20b",
+        "model": "/home/hoang/resources/models/openai/gpt-oss-20b",
         "temperature": 0.6,
         "max_tokens": 4000,
         "reasoning_effort": "low",
@@ -384,21 +478,6 @@ def _call_vllm(messages: list, config_path: str) -> Dict[str, str]:
 
 
 def process_example(data: dict, config_path: str) -> dict:
-    """
-    Phase 2 for a single skeleton file.
-
-    Iterates over `logs` in their stored backward order.  For each log entry:
-      1. Re-renders the prompt with the current accumulated gradient of the
-         output node (so the actual gradient text is always live, not stale).
-      2. Calls vLLM.
-      3. Writes reasoning / response / results back into the log entry.
-      4. Accumulates criticism / attribution into the relevant input steps.
-
-    Already-completed log entries (those that already carry a `response` key)
-    are replayed in-memory so later prompts receive correct gradient state,
-    but are not re-sent to vLLM — this makes the function safe to call on a
-    partially-processed file.
-    """
     data     = deepcopy(data)
     steps    = data["steps"]
     logs     = data["logs"]
@@ -407,63 +486,37 @@ def process_example(data: dict, config_path: str) -> dict:
     problem      = metadata["question"]
     ground_truth = metadata["ground_truth"]
 
-    # step_map: step_idx → mutable step dict
-    step_map: Dict[int, dict] = {s["step_idx"]: s for s in steps}
-
     # Lightweight node objects to track accumulated grad state across log entries.
     # We rebuild them in forward order so _prev links are available if needed.
     nodes: Dict[int, Any] = {}
     for step in steps:
         predecessors = [nodes[j] for j in step["input_steps"] if j in nodes]
-        node = agent_step(
-            inputs=predecessors,
-            output_value=step["content"],
-            output_role=step["role"],
-            output_idx=step["step_idx"],
-            problem=problem,
-            ground_truth=ground_truth,
-            llm_fn=None,
+        node = Tensor(
+            value=step['content'],
+            role=step['role'],
+            step_idx=step['step_idx'],
+            requires_grad=step['requires_grad'],
+            grad=step['grad'],
         )
-        # restore any previously accumulated state
-        node.requires_grad = step.get("requires_grad", True)
-        node.grad          = list(step["grad"])
-        node.attribution   = list(step["attribution"])
+        node._prev = set(predecessors)
         nodes[step["step_idx"]] = node
 
-    # Seed the loss gradient onto the first log's output node
-    # (mirrors what prepare_example did, but now using the live node object)
-    if logs:
-        first_out_idx = logs[0]["output_step_idx"]
-        initial_criticism = compute_loss(
-            final_output=nodes[first_out_idx],
-            expected=ground_truth,
-            problem=problem,
-        )
-        if not nodes[first_out_idx].grad:
-            nodes[first_out_idx].grad = [{
-                'from': 'output_loss', 
-                'content': initial_criticism
-            }]
-
-    # for log in logs:
     for log_idx, log in enumerate(tqdm(logs, desc=f"Backpropagating ...")):
         out_idx     = log["output_step_idx"]
         inp_idxs    = log["input_step_idxs"]
-        out_node    = nodes[out_idx]
         input_nodes = [nodes[i] for i in inp_idxs]
+        out_node    = nodes[out_idx]
         output_info = (out_node.role, out_node.step_idx, out_node.value)
         input_info  = [(n.role, n.step_idx, n.value, n.requires_grad) for n in input_nodes]
 
+        template    = log["messages"][-1]["content"]
+
+
         # Re-render the prompt with live gradient (always up-to-date)
-        grad_contents = [g['content'] for g in out_node.grad]
+        # import pdb; pdb.set_trace()
+        grad_contents = [g['gradient'] for g in out_node.grad]
         gradient = "\n---\n".join(grad_contents) if grad_contents else "No gradient available."
-        prompt = build_generic_backward_prompt(
-            problem=problem,
-            ground_truth=ground_truth,
-            output=output_info,
-            inputs=input_info,
-            downstream_grad=gradient,
-        )
+        prompt = template.replace("{downstream_grad}", gradient)
         messages = [
             {"role": "system", "content": "You are a helpful assistant."},
             {"role": "user",   "content": prompt},
@@ -484,19 +537,19 @@ def process_example(data: dict, config_path: str) -> dict:
         for inp_node in input_nodes:
             if inp_node.step_idx in parsed:
                 entry = parsed[inp_node.step_idx]
-                new_grad = {'from': out_node.step_idx, 'content': entry['criticism']}
+                new_grad = {
+                    'from': out_node.step_idx, 
+                    'gradient': entry['gradient'],
+                    'jacobian': entry['jacobian']
+                }
                 inp_node.grad.append(new_grad)
-                new_attr = {'from': out_node.step_idx, 'content': entry['attribution']}
-                inp_node.attribution.append(new_attr)
 
     # Flush accumulated node state back into the step dicts
     for step in steps:
         node = nodes[step["step_idx"]]
-        step["grad"]        = node.grad
-        step["attribution"] = node.attribution
+        step["grad"] = node.grad
 
     return data
-
 
 def process_all(
     output_dir: Path,
@@ -528,6 +581,7 @@ def process_all(
 
 
 def process_all_parallel(
+    input_dir: Path,
     output_dir: Path,
     config_path: str,
     start_idx: int = 0,
@@ -538,9 +592,10 @@ def process_all_parallel(
     Phase 2: iterate over skeleton files in `output_dir`, run inference,
     and save the completed results back in-place.
     """
-    filepaths = _get_sorted_json_files(str(output_dir))
+    filepaths = _get_sorted_json_files(str(input_dir))
     end_idx   = end_idx or len(filepaths)
     subset    = filepaths[start_idx:end_idx]
+    # import pdb; pdb.set_trace()
 
     if max_workers is None:
         with open(config_path) as f:
@@ -587,7 +642,7 @@ def main():
     args = parser.parse_args()
 
     # Register new prompt template
-    register_backward_template('generic', build_generic_backward_prompt)
+    register_backward_template('generic', build_backward_prompt)
 
     # Default: run both phases when neither flag is explicitly set
     run_prepare = args.prepare or (not args.prepare and not args.process)
@@ -607,6 +662,7 @@ def main():
     if run_process:
         # process_all(
         process_all_parallel(
+            input_dir=args.input,
             output_dir=output_dir,
             config_path=args.config,
             start_idx=args.start_idx,

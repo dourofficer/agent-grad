@@ -9,6 +9,7 @@ from utils.vllm import send_request
 from rich.console import Console
 from rich.markdown import Markdown
 from typing import Any, Dict, List, Optional, Tuple
+from agent_grad import Tensor
 
 def mdprint(text):
     console = Console()

@@ -1,0 +1,4 @@
+MAGENTIC = {
+    "orchestrator": ...,
+    "terminal": ...
+}
