@@ -22,6 +22,7 @@ class GradientFields:
     jacobian: str = ""
     gradient: str = ""
     jacobian_level: str = ""
+    gradient_level: str = ""
 
 
 # --- per-field metadata used by prompt builder and parser ---
@@ -48,6 +49,15 @@ FIELD_META: Dict[str, dict] = {
         "json_hint": "ZERO | NON-ZERO",
         "extract_prompt":  (
             "Extract the jacobian_level value for step {idx} from the following text: {text} "
+            "Extract verbatim and return your answer directly without explanation, no preamble. "
+            "If the information is not present, return 'UNKNOWN' only."
+        ),
+        "empty_default":  "UNKNOWN",
+    },
+    "gradient_level": {
+        "json_hint": "ZERO | NON-ZERO",
+        "extract_prompt":  (
+            "Extract the gradient_level value for step {idx} from the following text: {text} "
             "Extract verbatim and return your answer directly without explanation, no preamble. "
             "If the information is not present, return 'UNKNOWN' only."
         ),
