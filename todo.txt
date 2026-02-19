@@ -102,17 +102,29 @@ week 3 & 4
     [x] count tokens of trajectories to set the right configurations
         -> not really needed, just increase num_workers to 48.
     [x] use strong models to construct graphs and reuse (algorithm-generated only?)
-    [ ] support pre-built graph
+    [x] add making comprehensive report feature in cli.evaluate
+    [ ] custom agent_step for different agents. maybe look into the ground truth explanation.
+    [ ] merge all inference methods into cli.inference
+
+[ ] URGENT:
+    [x] support pre-built graph
     [ ] add uninformative loss (no ground truth)
     [-] improve textual gradient definition via prompting.
-        > on it.
-    [ ] aggregate gradient through LLM call to summarize.
-    [x] add making comprehensive report feature in cli.evaluate
-    [ ] extend evaluation on Algorithm-Generated subset
-    [ ] custom agent_step for different agents. maybe look into the ground truth explanation.
+        [x] output gradient schema manager
+        [-] better definition with gradient & jacobian.
+    [-] add a dedicated downstream gradient manager
+        [x] only output node downstream
+        [ ] output node and its successors downstream
+        [ ] aggregate gradient through LLM call to summarize.
     [ ] add automatic diagnosis: asking llm justification for groudtruth vs. predicted.
     [ ] add Qwen backbone
-    [ ] merge all inference methods into cli.inference
+    [-] full evaluation
+        [-] on Hand-Crafted subset
+            > running script
+        [-] on Algorithm-Generated subset
+            > running script
+        [ ] modify prediction code
+        [ ] modify evaluate code
 
 [-] IMPORTANT key design changes:
     [-] think of a scoring mechanisms. maybe LLM(all gradients) -> ranks.

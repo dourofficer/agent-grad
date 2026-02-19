@@ -79,6 +79,19 @@ python -m cli.backprop \
     --input  data/ww/algorithm-generated \
     --output outputs/gpt-oss-20b/agent-grad/algorithm-generated \
     --start_idx 0 --end_idx 10
+
+# backprop version 2
+python -m cli.backprop2 \
+    --config configs/gpt-oss-20b.yaml \
+    --input  data/ww/algorithm-generated \
+    --output outputs/gpt-oss-20b-v2/agent-grad/algorithm-generated \
+    --start_idx 0 --end_idx 10
+
+python -m cli.backprop2 \
+    --config configs/gpt-oss-20b.yaml \
+    --input  data/ww/hand-crafted \
+    --output outputs/gpt-oss-20b-v2/agent-grad/hand-crafted \
+    --start_idx 0 --end_idx 10
 ```
 
 ---

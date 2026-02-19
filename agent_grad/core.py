@@ -101,10 +101,11 @@ class Graph:
     Each node is a Tensor (step), edges represent dependencies.
     """
     
-    def __init__(self, problem: str = "", ground_truth: str = ""):
+    def __init__(self, problem: str = "", ground_truth: str = "", context: dict = {}):
         self.nodes: List[Tensor] = []
         self.problem = problem
         self.ground_truth = ground_truth
+        self.context = context
         self._loss_node: Optional[Tensor] = None
     
     def add_node(

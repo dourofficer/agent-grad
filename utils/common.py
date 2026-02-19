@@ -49,6 +49,8 @@ def _extract_metadata(data):
         "mistake_type": data.get("mistake_type"),
         "question_id": data.get("question_ID"), 
         "system_description": data.get("system_prompt"),
+        "subset": data.get("subset"), # this is injected, not presented in original file.
+        "filename": data.get("filename"), # this as well is injected.
     }
             
     return labels

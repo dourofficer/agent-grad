@@ -20,9 +20,9 @@ Each output file has the structure:
   }
 
 Example usage:
-    python -m cli.build_graph \\
-        --subset hand-crafted \\
-        --input  data/ww/hand-crafted \\
+    python -m cli.build_graph \
+        --subset hand-crafted \
+        --input  data/ww/hand-crafted \
         --start_idx 0 --end_idx 10
 
     python -m cli.build_graph \
@@ -59,7 +59,7 @@ def build_graph_hand_crafted(example: dict) -> Dict[int, List[int]]:
     parser = MagenticOneTrajectoryParser(dependency_mode="structural")
     events = parser.parse_trajectory(trajectory)
     dependencies = parser.build_dependency_graph(events)
-    return dependencies
+    return {"dependencies": dependencies}
 
 
 # ============================================================
@@ -137,30 +137,6 @@ def _parse_dep_response(response: str, step_idx: int) -> List[int]:
 
     return deps
 
-    # # default: strip markdown fences if present
-    # fence = re.search(r"```(?:json)?\s*(\{.*?\})\s*```", text, re.DOTALL)
-    # if fence: text = fence.group(1)
-
-    # parsed = None
-    # try: parsed = json.loads(text)
-
-    # # fallback 1: first { and last }
-    # except json.JSONDecodeError:
-    #     brace = re.search(r"\{.*\}", text, re.DOTALL)
-    #     if brace:
-    #         try: parsed = json.loads(brace.group(0))
-    #         except json.JSONDecodeError: pass
-
-    # # fallback 2: extract any numbers before the current step index
-    # if parsed is None:
-    #     nums = [int(x) for x in re.findall(r"\b(\d+)\b", text)]
-    #     return [d for d in nums if 0 <= d < step_idx]
-
-    # raw = parsed.get("dependencies", [])
-    # # Validate: only accept indices strictly before the current step
-    # return [int(d) for d in raw if isinstance(d, (int, float)) and 0 <= int(d) < step_idx]
-
-
 def build_graph_llm(
     example: dict,
     config_path: str,
@@ -214,14 +190,8 @@ def build_graph_llm(
 # Serialisation helpers
 # ============================================================
 
-def _to_serialisable(deps: Dict[int, List[int]]) -> dict:
-    """Convert int-keyed dict to string-keyed for JSON serialisation."""
-    return {str(k): v for k, v in sorted(deps.items())}
-
 
 def _save_dependencies(deps: Dict[int, List[int]], output_path: Path) -> None:
-    # output_path.parent.mkdir(parents=True, exist_ok=True)
-    # payload = {"dependencies": _to_serialisable(deps)}
     with open(output_path, "w", encoding="utf-8") as f:
         json.dump(deps, f, indent=4, ensure_ascii=False)
 
