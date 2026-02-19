@@ -124,15 +124,35 @@ def linearize(graph) -> List[Dict[str, Any]]:
 # Prompt builder & response parser  (severity-free)
 # ============================================================
 MAGENTIC_ONE = """
-* Orchestrator: The lead agent, the Orchestrator is responsible for high-level planning, directing specialized agents, tracking progress, updating states and ledgers, and error recovery. As the Orchestrator operates, its planning can be generic or lack of specificity as long as it is not wrong.
+* Orchestrator: The lead agent, the Orchestrator is responsible for high-level \
+planning, directing specialized agents, tracking progress, updating states and \
+ledgers, and error recovery. As the Orchestrator operates, its planning can be \
+generic or lack of specificity as long as it is not wrong.
 
-* Assistant: This LLM-based agent is specialized in writing code, analyzing information collected by other agents, and creating new artifacts. It can author new programs and is capable of debugging its own code when provided with console output.
+* Assistant: This LLM-based agent is specialized in writing code, analyzing \
+information collected by other agents, and creating new artifacts. It can author \
+new programs and is capable of debugging its own code when provided with console \
+output.
 
-* ComputerTerminal: This agent is deterministic and does not use an LLM. Computer terminal performs no other action than running Python scripts (provided to it quoted in ```python code blocks), or sh shell scripts (provided to it quoted in ```sh code blocks)
+* ComputerTerminal: This agent is deterministic and does not use an LLM. Computer \
+terminal performs no other action than running Python scripts (provided to it quoted \
+in ```python code blocks), or sh shell scripts (provided to it quoted in ```sh code \
+blocks)
 
-* WebSurfer: This highly specialized LLM-based agent is proficient in managing a Chromium-based web browser. It receives natural-language requests and maps them to actions such as visiting URLs, performing web searches, clicking elements, typing into forms, and scrolling. It can also perform "reading actions" like summarizing content or answering questions about a document. For visual grounding, it uses "set-of-marks" prompting on annotated screenshots to interact with specific page elements. It can also be asked to sleep and wait for pages to load, in cases where the pages seem to be taking a while to load.
+* WebSurfer: This highly specialized LLM-based agent is proficient in managing a \
+Chromium-based web browser. It receives natural-language requests and maps them to \
+actions such as visiting URLs, performing web searches, clicking elements, typing \
+into forms, and scrolling. It can also perform "reading actions" like summarizing \
+content or answering questions about a document. For visual grounding, it uses \
+"set-of-marks" prompting on annotated screenshots to interact with specific page \
+elements. It can also be asked to sleep and wait for pages to load, in cases where \
+the pages seem to be taking a while to load.
 
-* FileSurfer: Similar in design to the WebSurfer, the FileSurfer commands a custom markdown-based file preview application instead of a web browser. This read-only application supports a wide range of file types, including PDFs, Office documents, images, videos, and audio. The FileSurfer can navigate folder structures and list directory contents to locate and process information within local files.
+* FileSurfer: Similar in design to the WebSurfer, the FileSurfer commands a custom \
+markdown-based file preview application instead of a web browser. This read-only \
+application supports a wide range of file types, including PDFs, Office documents, \
+images, videos, and audio. The FileSurfer can navigate folder structures and list \
+directory contents to locate and process information within local files.
 """.strip()
 
 def build_backward_prompt(
@@ -146,7 +166,7 @@ def build_backward_prompt(
     active = [(role, idx, val) for role, idx, val, rg in inputs if rg]
 
     inputs_block = "\n---\n".join(
-        f"**Step {idx} ({role})**\n{val}" for role, idx, val in active
+        f"**Step {idx} ({role})**\n{val}" for role, idx, val, rg in inputs
     )
     json_template = {
         f"step_{idx}": {
@@ -388,7 +408,7 @@ def prepare_example(example: dict, role_id: str = "role") -> dict:
         }
         for node in nodes
     ]
-    steps[-1]['grad'] = [{'jacobian': None, 'gradient': initial_criticism}]
+    steps[-1]['grad'] = [{'jacobian': None, 'gradient': initial_criticism, 'from': 'loss'}]
 
     # logs — one per backward template, in backward order
     logs = []
@@ -514,7 +534,7 @@ def process_example(data: dict, config_path: str) -> dict:
 
         # Re-render the prompt with live gradient (always up-to-date)
         # import pdb; pdb.set_trace()
-        grad_contents = [g['gradient'] for g in out_node.grad]
+        grad_contents = [f"Gradient from step {g['from']}: {g['gradient']}" for g in out_node.grad]
         gradient = "\n---\n".join(grad_contents) if grad_contents else "No gradient available."
         prompt = template.replace("{downstream_grad}", gradient)
         messages = [

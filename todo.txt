@@ -104,7 +104,8 @@ week 3 & 4
     [x] use strong models to construct graphs and reuse (algorithm-generated only?)
     [ ] support pre-built graph
     [ ] add uninformative loss (no ground truth)
-    [ ] improve textual gradient definition via prompting.
+    [-] improve textual gradient definition via prompting.
+        > on it.
     [ ] aggregate gradient through LLM call to summarize.
     [x] add making comprehensive report feature in cli.evaluate
     [ ] extend evaluation on Algorithm-Generated subset
@@ -113,10 +114,16 @@ week 3 & 4
     [ ] add Qwen backbone
     [ ] merge all inference methods into cli.inference
 
-[ ] IMPORTANT key design changes:
-    [ ] think of a scoring mechanisms. maybe LLM(all gradients) -> ranks.
-    [ ] backpropagation only produces textual gradients. no coarse categorization like the current version.
+[-] IMPORTANT key design changes:
+    [-] think of a scoring mechanisms. maybe LLM(all gradients) -> ranks.
+        no, the decisive error step should be the last step receiving non-zero gradient
+        during backpropagation. 
+    [-] backpropagation only produces textual gradients. no coarse categorization like the current version.
+        hope the jacobian could help something. for example, using gradient-content entailment,
+        and gradient mutation rate, as described in this chat:
+        https://claude.ai/share/7557e0ed-e006-49d0-9089-708a6206b357
     [ ] derive a global memory mechanism to help with the gradient vanishing (?)
+        > not done yet.
 
 [x] analyze early results
     model      	 strategy    	 subset      	 k 	 agent_acc	 step_acc
@@ -136,7 +143,7 @@ week 3 & 4
         -> there might be some error in definition of `decisive error` vs `root cause`
         -> check definitions of ORIGINATING_ERROR, PROPAGATING_ERROR vs decisive error
 
-[ ] analyze failures
+[-] analyze failures
     [ ] analyze long trajectories. this might be where agent-grad show stronger performance.
         -> trajectories with > 50 steps: 23 / 58
     [ ] select 5 correct cases & 10 faled cases for inspection.
@@ -145,3 +152,23 @@ week 3 & 4
     [ ] inspect why some chains are marked with many (consecutive) ORIGINATING_ERROR
 
 
+[ ] make report
+    note: i want to position agent-grad to tackle long trajectories well specifically.
+    this means if agent-grad works, it should perform reasonably on short trajectories,
+    and exceeds other baselines on long trajectories.
+    [ ] how well agent-grad performs on short-context (10 examples)
+    [ ] how well agent-grad performs on long-context  (10 examples)
+    [ ] error location. difference when the error is early in the trajectory vs. late
+    [ ] most common errors in labeled data.
+    [ ] most common errors in agent-grad's gradients.
+        [ ] vanishing gradient: once idenified zero-gradient, following gradients are zero.
+        [ ] blame diffusion: error attribution spreads across steps.
+        [ ] ...
+        make this quantitative — e.g., "out of 10 long-context failures, 4 were vanishing 
+        gradient, 3 were blame diffusion, 2 were graph construction errors, 1 was LLM 
+        hallucination in the backward prompt."
+    [ ] consider the framing: the decisive error step should be the last step receiving 
+        non-zero gradient during backpropagation. 
+        > for the correctly-predicted examples, check: does the gradient actually stop 
+        (or nearly stop) at the labeled step? For incorrect ones, does it stop too early or 
+        leak through.
