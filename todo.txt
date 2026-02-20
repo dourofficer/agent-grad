@@ -119,9 +119,9 @@ week 3 & 4
     [ ] add automatic diagnosis: asking llm justification for groudtruth vs. predicted.
     [ ] add Qwen backbone
     [-] full evaluation
-        [-] on Hand-Crafted subset
+        [x] on Hand-Crafted subset
             > running script
-        [-] on Algorithm-Generated subset
+        [x] on Algorithm-Generated subset
             > running script
         [ ] modify prediction code
         [ ] modify evaluate code
@@ -141,6 +141,8 @@ week 3 & 4
     model      	 strategy    	 subset      	 k 	 agent_acc	 step_acc
     gpt-oss-20b	 all-at-once 	 hand-crafted	 10	     34.48	    24.14
     gpt-oss-20b	 agent-grad  	 hand-crafted	 10	     46.55	    44.83
+                                                  5      48.28      32.76
+                                                 10      60.34      48.28
     ---
     gpt-oss-20b	 step-by-step	 hand-crafted	  1	     31.03	    18.97
     gpt-oss-20b	 text-grad   	 hand-crafted	  1	     12.07	     3.45
@@ -168,8 +170,7 @@ week 3 & 4
     note: i want to position agent-grad to tackle long trajectories well specifically.
     this means if agent-grad works, it should perform reasonably on short trajectories,
     and exceeds other baselines on long trajectories.
-    [ ] how well agent-grad performs on short-context (10 examples)
-    [ ] how well agent-grad performs on long-context  (10 examples)
+    [ ] how well agent-grad performs on short vs. long context.
     [ ] error location. difference when the error is early in the trajectory vs. late
     [ ] most common errors in labeled data.
     [ ] most common errors in agent-grad's gradients.
@@ -179,6 +180,8 @@ week 3 & 4
         make this quantitative — e.g., "out of 10 long-context failures, 4 were vanishing 
         gradient, 3 were blame diffusion, 2 were graph construction errors, 1 was LLM 
         hallucination in the backward prompt."
+    [ ] inspect which samples that agent grad get correct and other baselines fail, and
+        vice versa.
     [ ] consider the framing: the decisive error step should be the last step receiving 
         non-zero gradient during backpropagation. 
         > for the correctly-predicted examples, check: does the gradient actually stop 

@@ -157,24 +157,51 @@ def _predictions_text_grad(logs, steps_by_idx):
 
     return sorted(predictions, key=lambda x: x['step_idx'])
 
+# def _predictions_agent_grad(logs, steps_by_idx):
+#     """
+#     This one is a little special. Different from usual prompting.
+#     """
+
+#     predictions = []
+#     steps = [v for k, v in steps_by_idx.items()]
+#     for step in steps:
+#         step_idx = step.get('step_idx', -1)
+#         attributions = [attr['content'] for attr in step['attribution']]
+#         if 'ORIGINATING_ERROR' not in attributions: continue
+
+#         predictions.append({
+#             'step_idx': step_idx,
+#             'role': step.get('role'),
+#             'content': step.get('content'),
+#             'score': 1.0,
+#             'reason': step.get('grad'),
+#         })
+#     return sorted(predictions, key=lambda x: x['step_idx'])
+
 def _predictions_agent_grad(logs, steps_by_idx):
     """
     This one is a little special. Different from usual prompting.
     """
-
+    def is_non_zero(score):
+        return "non-zero" in score.lower()
+    
     predictions = []
     steps = [v for k, v in steps_by_idx.items()]
-    for step in steps:
-        step_idx = step.get('step_idx', -1)
-        attributions = [attr['content'] for attr in step['attribution']]
-        if 'ORIGINATING_ERROR' not in attributions: continue
+    for x in steps:
+        step_idx = x.get('step_idx', -1)
+        if not x.get('grad'): continue
+
+        jacobian_levels = [grad.get('jacobian_level', '').lower() for grad in x['grad']]
+        
+        count_nz = len([x for x in jacobian_levels if is_non_zero(x)])
+        if count_nz == 0: continue
 
         predictions.append({
             'step_idx': step_idx,
-            'role': step.get('role'),
-            'content': step.get('content'),
+            'role': x.get('role'),
+            'content': x.get('content'),
             'score': 1.0,
-            'reason': step.get('grad'),
+            'reason': x.get('grad')
         })
     return sorted(predictions, key=lambda x: x['step_idx'])
 

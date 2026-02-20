@@ -167,6 +167,14 @@ python -m cli.predict \
 python -m cli.predict \
     --dir    outputs/gpt-oss-20b/text-grad/hand-crafted \
     --method text_grad
+
+python -m cli.predict \
+    --dir outputs/gpt-oss-20b-v2/agent-grad-2/hand-crafted \
+    --method agent_grad
+
+python -m cli.predict \
+    --dir outputs/gpt-oss-20b-v2/agent-grad-2/hand-crafted \
+    --method agent_grad
 ```
 
 ---

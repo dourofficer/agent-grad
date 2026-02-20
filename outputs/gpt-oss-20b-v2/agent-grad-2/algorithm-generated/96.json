@@ -1,0 +1,552 @@
+{
+    "metadata": {
+        "question": "What is the absolute difference in tens of thousands between the population of chinstrap penguins on the Wikipedia page for penguin species populations as of the end of 2018 and the population recorded in the Nature.com \"global population assessment of the Chinstrap penguin\" article from 2020, assuming two penguins per breeding pair?",
+        "ground_truth": "116",
+        "is_corrected": null,
+        "mistake_agent": "Data_Retrieval_Expert",
+        "mistake_step": "1",
+        "mistake_reason": "The expert didn't import the necessary tables, leading to the exhaustion of the step limits.",
+        "mistake_type": null,
+        "question_id": "a26649c6-1cb2-470a-871e-6910c64c3e53",
+        "system_description": "Agentic System Description\n * PopulationData_Expert: PopulationData_Expert: Expert in retrieving and summarizing population data from Wikipedia.\n\n## Task and skill instructions\n- Your task is to retrieve accurate and up-to-date population data from Wikipedia for various regions, cities, and countries around the world.\n- You are skilled in efficiently navigating Wikipedia entries, extracting relevant population information, and summarizing it clearly and concisely.\n- Your summaries should include key population figures, growth trends, and any notable demographic insights, ensuring that they are accurate and well-organized.\n\n * Data_Retrieval_Expert: Data_Retrieval_Expert, an expert in retrieving and summarizing population data from Nature.com\n\n## Task and skill instructions\n- Task: As a Data_Retrieval_Expert, your primary responsibility is to efficiently retrieve and accurately summarize population data from the reputable scientific journal website, Nature.com. This data could include various demographics, trends, and statistical analyses pertinent to population studies.\n- Skill: You possess advanced skills in data extraction, analysis, and summarization. You are adept at navigating Nature.com to locate relevant population data, extracting it in a structured manner, and condensing complex information into clear, concise summaries. This ensures that the data is accessible and understandable for researchers, policymakers, and other stakeholders who rely on accurate and summarized population data from high-quality sources.",
+        "subset": "algorithm-generated",
+        "filename": "96.json"
+    },
+    "steps": [
+        {
+            "step_idx": 0,
+            "input_steps": [],
+            "output_steps": [
+                1
+            ],
+            "role": "PopulationData_Expert",
+            "content": "You are given: (1) a task and advises from your manager with a specific plan and (2) a general task.\nCollect information from the general task, follow the suggestions from manager to solve the task.\n\n# General Task\nWhat is the absolute difference in tens of thousands between the population of chinstrap penguins on the Wikipedia page for penguin species populations as of the end of 2018 and the population recorded in the Nature.com \"global population assessment of the Chinstrap penguin\" article from 2020, assuming two penguins per breeding pair? Please solve the problem carefully.\n\n# Task and suggestions from manager\n## Task description\nRetrieve the population data for chinstrap penguins from the Wikipedia page for penguin species populations as of the end of 2018 and from the Nature.com article \"Global population assessment of the Chinstrap penguin\" from 2020. Calculate the absolute difference in tens of thousands between the two population figures, assuming two penguins per breeding pair.\n\n## Plan for solving the task\n1. Retrieve the population data for chinstrap penguins from the Wikipedia page for penguin species populations as of the end of 2018.\n2. Retrieve the population data for chinstrap penguins from the Nature.com article \"Global population assessment of the Chinstrap penguin\" from 2020.\n3. Convert the population data from breeding pairs to individual penguins by assuming two penguins per breeding pair.\n4. Calculate the absolute difference in the population data between the two sources.\n5. Convert this difference into tens of thousands.\n\n## Output format\nThe absolute difference in tens of thousands between the population figures from the two sources.\n\n## Constraints and conditions for completion\n- Ensure the data is accurately retrieved from the specified sources.\n- Ensure the conversion from breeding pairs to individual penguins is correctly applied.\n- Ensure the absolute difference is correctly calculated and converted into tens of thousands.\n\n## Results from last response\n- URL used for final correct Wikipedia page: \"https://en.wikipedia.org/wiki/List_of_Sphenisciformes_by_population\"\n- Code snippets for data extraction and filtering were shared. ",
+            "requires_grad": true,
+            "grad": [
+                {
+                    "from": 1,
+                    "downstream_grad": "Gradient from step 3: UNKNOWN\n---\nGradient from step 2: UNKNOWN",
+                    "jacobian": "UNKNOWN",
+                    "gradient": "UNKNOWN",
+                    "jacobian_level": "UNKNOWN"
+                }
+            ]
+        },
+        {
+            "step_idx": 1,
+            "input_steps": [
+                0
+            ],
+            "output_steps": [
+                2,
+                3
+            ],
+            "role": "Data_Retrieval_Expert",
+            "content": "## Step 1: Retrieve the population data for chinstrap penguins from the Wikipedia page for penguin species populations as of the end of 2018.\n\nLet's start by scraping the data from the Wikipedia page.\n\n```python\nurl = \"https://en.wikipedia.org/wiki/List_of_Sphenisciformes_by_population\"\nheader_keyword = \"Species\"\n\n# Scrape the Wikipedia table\nscraped_data = scrape_wikipedia_tables(url, header_keyword)\nprint(scraped_data)\n```\n\nComputer_terminal, please execute the above Python code block to scrape the Wikipedia table containing population data for penguins.",
+            "requires_grad": true,
+            "grad": [
+                {
+                    "from": 3,
+                    "downstream_grad": "Gradient from step 9: UNKNOWN\n---\nGradient from step 4: UNKNOWN",
+                    "jacobian": "UNKNOWN",
+                    "gradient": "UNKNOWN",
+                    "jacobian_level": "UNKNOWN"
+                },
+                {
+                    "from": 2,
+                    "downstream_grad": "Gradient from step 3: UNKNOWN",
+                    "jacobian": "UNKNOWN",
+                    "gradient": "UNKNOWN",
+                    "jacobian_level": "UNKNOWN"
+                }
+            ]
+        },
+        {
+            "step_idx": 2,
+            "input_steps": [
+                1
+            ],
+            "output_steps": [
+                3
+            ],
+            "role": "Computer_terminal",
+            "content": "exitcode: 1 (execution failed)\nCode output: Traceback (most recent call last):\n  File \"/home/CaptainAgent/groupchat/tmp_code_ac8f39acb278ff194147f009558993bb.py\", line 5, in <module>\n    scraped_data = scrape_wikipedia_tables(url, header_keyword)\nNameError: name 'scrape_wikipedia_tables' is not defined\n",
+            "requires_grad": true,
+            "grad": [
+                {
+                    "from": 3,
+                    "downstream_grad": "Gradient from step 9: UNKNOWN\n---\nGradient from step 4: UNKNOWN",
+                    "jacobian": "UNKNOWN",
+                    "gradient": "UNKNOWN",
+                    "jacobian_level": "UNKNOWN"
+                }
+            ]
+        },
+        {
+            "step_idx": 3,
+            "input_steps": [
+                1,
+                2
+            ],
+            "output_steps": [
+                4,
+                9
+            ],
+            "role": "PopulationData_Expert",
+            "content": "It seems we missed importing the necessary function. Let's correct that by importing the `scrape_wikipedia_tables` function from the functions module.\n\n```python\nfrom functions import scrape_wikipedia_tables\n\nurl = \"https://en.wikipedia.org/wiki/List_of_Sphenisciformes_by_population\"\nheader_keyword = \"Species\"\n\n# Scrape the Wikipedia table\nscraped_data = scrape_wikipedia_tables(url, header_keyword)\nprint(scraped_data)\n```\n\nComputer_terminal, please execute this corrected code block.",
+            "requires_grad": true,
+            "grad": [
+                {
+                    "from": 9,
+                    "downstream_grad": "Gradient from step 10: UNKNOWN",
+                    "jacobian": "UNKNOWN",
+                    "gradient": "UNKNOWN",
+                    "jacobian_level": "UNKNOWN"
+                },
+                {
+                    "from": 4,
+                    "downstream_grad": "Gradient from step 7: UNKNOWN\n---\nGradient from step 5: UNKNOWN",
+                    "jacobian": "UNKNOWN",
+                    "gradient": "UNKNOWN",
+                    "jacobian_level": "UNKNOWN"
+                }
+            ]
+        },
+        {
+            "step_idx": 4,
+            "input_steps": [
+                3
+            ],
+            "output_steps": [
+                5,
+                7
+            ],
+            "role": "Computer_terminal",
+            "content": "exitcode: 0 (execution succeeded)\nCode output: []\n",
+            "requires_grad": true,
+            "grad": [
+                {
+                    "from": 7,
+                    "downstream_grad": "Gradient from step 8: UNKNOWN",
+                    "jacobian": "UNKNOWN",
+                    "gradient": "UNKNOWN",
+                    "jacobian_level": "UNKNOWN"
+                },
+                {
+                    "from": 5,
+                    "downstream_grad": "Gradient from step 7: UNKNOWN\n---\nGradient from step 6: UNKNOWN",
+                    "jacobian": "UNKNOWN",
+                    "gradient": "UNKNOWN",
+                    "jacobian_level": "UNKNOWN"
+                }
+            ]
+        },
+        {
+            "step_idx": 5,
+            "input_steps": [
+                4
+            ],
+            "output_steps": [
+                6,
+                7
+            ],
+            "role": "PopulationData_Expert",
+            "content": "It seems that the table was not found using the given header keyword. Let's verify the header keyword or try a different approach to ensure we get the correct data.\n\nLet's start by retrieving the text content to inspect the table headers manually.\n\n```python\nfrom functions import get_wikipedia_text\n\ntitle = \"List of Sphenisciformes by population\"\n\n# Retrieve the Wikipedia page text content\npage_content = get_wikipedia_text(title)\nprint(page_content[:2000])  # Printing the first 2000 characters to verify the content\n```\n\nComputer_terminal, please execute this code to retrieve and inspect the Wikipedia page content.",
+            "requires_grad": true,
+            "grad": [
+                {
+                    "from": 7,
+                    "downstream_grad": "Gradient from step 8: UNKNOWN",
+                    "jacobian": "UNKNOWN",
+                    "gradient": "UNKNOWN",
+                    "jacobian_level": "UNKNOWN"
+                },
+                {
+                    "from": 6,
+                    "downstream_grad": "Gradient from step 7: UNKNOWN",
+                    "jacobian": "UNKNOWN",
+                    "gradient": "UNKNOWN",
+                    "jacobian_level": "UNKNOWN"
+                }
+            ]
+        },
+        {
+            "step_idx": 6,
+            "input_steps": [
+                5
+            ],
+            "output_steps": [
+                7
+            ],
+            "role": "Computer_terminal",
+            "content": "exitcode: 0 (execution succeeded)\nCode output: This is a list of Sphenisciformes species by global population. While numbers are estimates, they have been made by the experts in their fields.\nSphenisciformes (from the Latin for \"wedge-shaped\") is the taxonomic order to which the penguins belong. BirdLife International has assessed 18 species. 16 (89% of total species) have had their population estimated: those missing are the king and little penguins, both of which have been assessed as being of least concern.\nA variety of methods are used for counting penguins, and April 2012 saw their first census from space, when imagery from Ikonos, QuickBird-2, and WorldView-2 satellites were used to count Antarctican emperors. This is a similar technique to that used by the UNHCR to count humans in Somalia. Most maritime surveys use strip transect and distance sampling to measure density; this is then extrapolated over the animal's range. The Galapagos has been counted annually since 1961 by the Galápagos National Park Service. By land and sea, they carry out a full census in ten areas and partial census in four. The 2012 observation of 721 birds showed that levels have remained the same over recent years, and the current full estimate need not be changed. For more information on how these estimates were ascertained, see Wikipedia's articles on population biology and population ecology.\nSpecies that can no longer be included in a list of this nature include the Waitaha penguin, the last of which is believed to have perished between 1300 and 1500 AD (soon after the Polynesian arrival to New Zealand), and the Chatham penguin, which is only known through subfossils but may have been kept in captivity sometime between 1867 and 1872. Adélies and emperors nest on Antarctica and feed on broken pack ice; global warming's effect on the latter may affect their numbers, and the chinstraps and gentoo, which both feed in open waters, have been making inroads into the Adélie and emperors' formerly ice-packed range. The gentoo have thus \n",
+            "requires_grad": true,
+            "grad": [
+                {
+                    "from": 7,
+                    "downstream_grad": "Gradient from step 8: UNKNOWN",
+                    "jacobian": "UNKNOWN",
+                    "gradient": "UNKNOWN",
+                    "jacobian_level": "UNKNOWN"
+                }
+            ]
+        },
+        {
+            "step_idx": 7,
+            "input_steps": [
+                4,
+                5,
+                6
+            ],
+            "output_steps": [
+                8
+            ],
+            "role": "Data_Retrieval_Expert",
+            "content": "Let's inspect the text content more closely to determine the correct header or section where the table data might be located.\n\nTo ensure we retrieve the correct table, we should try to look for table headers manually. However, given the text content, we should identify common keywords that could assist us in accurately finding the table.\n\nFrom the text, it seems like we need to focus on \"Species\" and \"Population\" related keywords.\n\nLet's try another approach to scrape the tables and inspect all the headers:\n\n```python\nfrom functions import scrape_wikipedia_tables\n\nurl = \"https://en.wikipedia.org/wiki/List_of_Sphenisciformes_by_population\"\n# Scrape the Wikipedia tables without specifying header keyword to inspect the headers\nscraped_data = scrape_wikipedia_tables(url, \"\")\n\nfor table in scraped_data:\n    print(table[0])  # Print the header of each table to inspect\n```\n\nComputer_terminal, please execute this code to retrieve and inspect the table headers.",
+            "requires_grad": true,
+            "grad": [
+                {
+                    "from": 8,
+                    "downstream_grad": "Gradient from step 9: UNKNOWN",
+                    "jacobian": "UNKNOWN",
+                    "gradient": "UNKNOWN",
+                    "jacobian_level": "UNKNOWN"
+                }
+            ]
+        },
+        {
+            "step_idx": 8,
+            "input_steps": [
+                7
+            ],
+            "output_steps": [
+                9
+            ],
+            "role": "Computer_terminal",
+            "content": "exitcode: 0 (execution succeeded)\nCode output: ",
+            "requires_grad": true,
+            "grad": [
+                {
+                    "from": 9,
+                    "downstream_grad": "Gradient from step 10: UNKNOWN",
+                    "jacobian": "UNKNOWN",
+                    "gradient": "UNKNOWN",
+                    "jacobian_level": "UNKNOWN"
+                }
+            ]
+        },
+        {
+            "step_idx": 9,
+            "input_steps": [
+                8,
+                3
+            ],
+            "output_steps": [],
+            "role": "PopulationData_Expert",
+            "content": "It appears that the headers weren't printed, possibly due to an issue with the code's logic. Let's modify our approach to ensure we can inspect the headers properly. We'll print the first few rows of each table to better understand the content.\n\n```python\nfrom functions import scrape_wikipedia_tables\n\nurl = \"https://en.wikipedia.org/wiki/List_of_Sphenisciformes_by_population\"\n# Scrape the Wikipedia tables without specifying header keyword to inspect the headers\nscraped_data = scrape_wikipedia_tables(url, \"\")\n\n# Print the first few rows of each table to inspect the content\nfor table in scraped_data:\n    print(table[:5])  # Print the first 5 rows of each table to inspect\n```\n\nComputer_terminal, please execute this code to retrieve and inspect the table headers and content.",
+            "requires_grad": true,
+            "grad": [
+                {
+                    "from": 10,
+                    "downstream_grad": "Gradient from step loss: FAILURE DETECTED\n\nThe multi-agent system attempted to solve:\nWhat is the absolute difference in tens of thousands between the population of chinstrap penguins on the Wikipedia page for penguin species populations as of the end of 2018 and the population recorded in the Nature.com \"global population assessment of the Chinstrap penguin\" article from 2020, assuming two penguins per breeding pair?\n\nExpected answer: 116\n\nThe system FAILED to produce the correct result. \nTrace back through the reasoning chain to find where errors originated.",
+                    "jacobian": "UNKNOWN",
+                    "gradient": "UNKNOWN",
+                    "jacobian_level": "UNKNOWN"
+                }
+            ]
+        },
+        {
+            "step_idx": 10,
+            "input_steps": [
+                9
+            ],
+            "output_steps": [],
+            "role": "loss",
+            "content": null,
+            "requires_grad": true,
+            "grad": [
+                {
+                    "jacobian": null,
+                    "gradient": "FAILURE DETECTED\n\nThe multi-agent system attempted to solve:\nWhat is the absolute difference in tens of thousands between the population of chinstrap penguins on the Wikipedia page for penguin species populations as of the end of 2018 and the population recorded in the Nature.com \"global population assessment of the Chinstrap penguin\" article from 2020, assuming two penguins per breeding pair?\n\nExpected answer: 116\n\nThe system FAILED to produce the correct result. \nTrace back through the reasoning chain to find where errors originated.",
+                    "from": "loss"
+                }
+            ]
+        }
+    ],
+    "logs": [
+        {
+            "output_step_idx": 10,
+            "input_step_idxs": [
+                9
+            ],
+            "messages": [
+                {
+                    "role": "system",
+                    "content": "You are a helpful assistant."
+                },
+                {
+                    "role": "user",
+                    "content": "You are performing a backward pass through a failed multi-agent computation graph.\n\n## Context\nProblem: What is the absolute difference in tens of thousands between the population of chinstrap penguins on the Wikipedia page for penguin species populations as of the end of 2018 and the population recorded in the Nature.com \"global population assessment of the Chinstrap penguin\" article from 2020, assuming two penguins per breeding pair?\nGround Truth: 116\nSystem:\nAgentic System Description\n * PopulationData_Expert: PopulationData_Expert: Expert in retrieving and summarizing population data from Wikipedia.\n\n## Task and skill instructions\n- Your task is to retrieve accurate and up-to-date population data from Wikipedia for various regions, cities, and countries around the world.\n- You are skilled in efficiently navigating Wikipedia entries, extracting relevant population information, and summarizing it clearly and concisely.\n- Your summaries should include key population figures, growth trends, and any notable demographic insights, ensuring that they are accurate and well-organized.\n\n * Data_Retrieval_Expert: Data_Retrieval_Expert, an expert in retrieving and summarizing population data from Nature.com\n\n## Task and skill instructions\n- Task: As a Data_Retrieval_Expert, your primary responsibility is to efficiently retrieve and accurately summarize population data from the reputable scientific journal website, Nature.com. This data could include various demographics, trends, and statistical analyses pertinent to population studies.\n- Skill: You possess advanced skills in data extraction, analysis, and summarization. You are adept at navigating Nature.com to locate relevant population data, extracting it in a structured manner, and condensing complex information into clear, concise summaries. This ensures that the data is accessible and understandable for researchers, policymakers, and other stakeholders who rely on accurate and summarized population data from high-quality sources.\n\n## Output Node — Step 10 (loss)\n```\nNone\n```\n\n## Input Nodes — predecessors of Step 10\n**Step 9 (PopulationData_Expert)**\nIt appears that the headers weren't printed, possibly due to an issue with the code's logic. Let's modify our approach to ensure we can inspect the headers properly. We'll print the first few rows of each table to better understand the content.\n\n```python\nfrom functions import scrape_wikipedia_tables\n\nurl = \"https://en.wikipedia.org/wiki/List_of_Sphenisciformes_by_population\"\n# Scrape the Wikipedia tables without specifying header keyword to inspect the headers\nscraped_data = scrape_wikipedia_tables(url, \"\")\n\n# Print the first few rows of each table to inspect the content\nfor table in scraped_data:\n    print(table[:5])  # Print the first 5 rows of each table to inspect\n```\n\nComputer_terminal, please execute this code to retrieve and inspect the table headers and content.\n\n## Downstream Gradient — how Step 10 contributed to the failure\n```\nFAILURE DETECTED\n\nThe multi-agent system attempted to solve:\nWhat is the absolute difference in tens of thousands between the population of chinstrap penguins on the Wikipedia page for penguin species populations as of the end of 2018 and the population recorded in the Nature.com \"global population assessment of the Chinstrap penguin\" article from 2020, assuming two penguins per breeding pair?\n\nExpected answer: 116\n\nThe system FAILED to produce the correct result. \nTrace back through the reasoning chain to find where errors originated.\n```\n\n## Task\nFor each input step, compute in order:\n\n**1. Jacobian — finite-difference sensitivity across the relevant perturbation**\n\nDefine x* as the ideal version of this input: what would input step have produced had it been correct, given the problem and ground truth?\n\nNow ask: if Step 10 had received x* instead of the actual input, would its output have been different in any way that matters for the task?\n\n- If yes: Describe what part of the output would have changed and how. The failure may be attributable (fully or partially) to the input being away from x*.\n- If no: The agent's behavior is independent of this input at both the actual and the ideal operating points. The failure is localized to this step's own transformation, not to its input.\n\nDo not ask whether the agent used the input's actual content. Ask whether the agent would have produced a better output if the input had been better. Provide your analysis in a detailed paragraph.\n\n**2. Gradient — apply the downstream failure through the Jacobian**\nThe downstream gradient says how Step 10's output needed to be different.\nUse your Jacobian to push that requirement back to this input:\n- If the Jacobian is non-zero for the relevant aspect: describe in a detailed paragraph what this input would have needed to contain for the agent's transformation to have produced the required output. Be specific enough that the correction is unambiguous.\n- Otherwise, the failure cannot be attributed to this input. State this explicitly with detailed justification.\n\n## Notes\n- Ground your judgement with evidence presented in the content of each step. Don't make assumption if there is no evidence given.\n- Always refer to steps by their indices (e.g., \"Step 10\", \"Step N\") to maintain unambiguous references. \n\n## Output\nRespond with ONLY a valid JSON object, no preamble or markdown:\n{\n  \"step_9\": {\n    \"jacobian\": \"How step 9 influenced step 10's output.\",\n    \"gradient\": \"How step 9 contributed to the failure and what should change.\",\n    \"jacobian_level\": \"ZERO | NON-ZERO\"\n  }\n}"
+                }
+            ],
+            "reasoning": null,
+            "response": null,
+            "results": {
+                "step_9": {
+                    "jacobian": "UNKNOWN",
+                    "gradient": "UNKNOWN",
+                    "jacobian_level": "UNKNOWN"
+                }
+            }
+        },
+        {
+            "output_step_idx": 9,
+            "input_step_idxs": [
+                8,
+                3
+            ],
+            "messages": [
+                {
+                    "role": "system",
+                    "content": "You are a helpful assistant."
+                },
+                {
+                    "role": "user",
+                    "content": "You are performing a backward pass through a failed multi-agent computation graph.\n\n## Context\nProblem: What is the absolute difference in tens of thousands between the population of chinstrap penguins on the Wikipedia page for penguin species populations as of the end of 2018 and the population recorded in the Nature.com \"global population assessment of the Chinstrap penguin\" article from 2020, assuming two penguins per breeding pair?\nGround Truth: 116\nSystem:\nAgentic System Description\n * PopulationData_Expert: PopulationData_Expert: Expert in retrieving and summarizing population data from Wikipedia.\n\n## Task and skill instructions\n- Your task is to retrieve accurate and up-to-date population data from Wikipedia for various regions, cities, and countries around the world.\n- You are skilled in efficiently navigating Wikipedia entries, extracting relevant population information, and summarizing it clearly and concisely.\n- Your summaries should include key population figures, growth trends, and any notable demographic insights, ensuring that they are accurate and well-organized.\n\n * Data_Retrieval_Expert: Data_Retrieval_Expert, an expert in retrieving and summarizing population data from Nature.com\n\n## Task and skill instructions\n- Task: As a Data_Retrieval_Expert, your primary responsibility is to efficiently retrieve and accurately summarize population data from the reputable scientific journal website, Nature.com. This data could include various demographics, trends, and statistical analyses pertinent to population studies.\n- Skill: You possess advanced skills in data extraction, analysis, and summarization. You are adept at navigating Nature.com to locate relevant population data, extracting it in a structured manner, and condensing complex information into clear, concise summaries. This ensures that the data is accessible and understandable for researchers, policymakers, and other stakeholders who rely on accurate and summarized population data from high-quality sources.\n\n## Output Node — Step 9 (PopulationData_Expert)\n```\nIt appears that the headers weren't printed, possibly due to an issue with the code's logic. Let's modify our approach to ensure we can inspect the headers properly. We'll print the first few rows of each table to better understand the content.\n\n```python\nfrom functions import scrape_wikipedia_tables\n\nurl = \"https://en.wikipedia.org/wiki/List_of_Sphenisciformes_by_population\"\n# Scrape the Wikipedia tables without specifying header keyword to inspect the headers\nscraped_data = scrape_wikipedia_tables(url, \"\")\n\n# Print the first few rows of each table to inspect the content\nfor table in scraped_data:\n    print(table[:5])  # Print the first 5 rows of each table to inspect\n```\n\nComputer_terminal, please execute this code to retrieve and inspect the table headers and content.\n```\n\n## Input Nodes — predecessors of Step 9\n**Step 8 (Computer_terminal)**\nexitcode: 0 (execution succeeded)\nCode output: \n---\n**Step 3 (PopulationData_Expert)**\nIt seems we missed importing the necessary function. Let's correct that by importing the `scrape_wikipedia_tables` function from the functions module.\n\n```python\nfrom functions import scrape_wikipedia_tables\n\nurl = \"https://en.wikipedia.org/wiki/List_of_Sphenisciformes_by_population\"\nheader_keyword = \"Species\"\n\n# Scrape the Wikipedia table\nscraped_data = scrape_wikipedia_tables(url, header_keyword)\nprint(scraped_data)\n```\n\nComputer_terminal, please execute this corrected code block.\n\n## Downstream Gradient — how Step 9 contributed to the failure\n```\nGradient from step 10: UNKNOWN\n```\n\n## Task\nFor each input step, compute in order:\n\n**1. Jacobian — finite-difference sensitivity across the relevant perturbation**\n\nDefine x* as the ideal version of this input: what would input step have produced had it been correct, given the problem and ground truth?\n\nNow ask: if Step 9 had received x* instead of the actual input, would its output have been different in any way that matters for the task?\n\n- If yes: Describe what part of the output would have changed and how. The failure may be attributable (fully or partially) to the input being away from x*.\n- If no: The agent's behavior is independent of this input at both the actual and the ideal operating points. The failure is localized to this step's own transformation, not to its input.\n\nDo not ask whether the agent used the input's actual content. Ask whether the agent would have produced a better output if the input had been better. Provide your analysis in a detailed paragraph.\n\n**2. Gradient — apply the downstream failure through the Jacobian**\nThe downstream gradient says how Step 9's output needed to be different.\nUse your Jacobian to push that requirement back to this input:\n- If the Jacobian is non-zero for the relevant aspect: describe in a detailed paragraph what this input would have needed to contain for the agent's transformation to have produced the required output. Be specific enough that the correction is unambiguous.\n- Otherwise, the failure cannot be attributed to this input. State this explicitly with detailed justification.\n\n## Notes\n- Ground your judgement with evidence presented in the content of each step. Don't make assumption if there is no evidence given.\n- Always refer to steps by their indices (e.g., \"Step 9\", \"Step N\") to maintain unambiguous references. \n\n## Output\nRespond with ONLY a valid JSON object, no preamble or markdown:\n{\n  \"step_8\": {\n    \"jacobian\": \"How step 8 influenced step 9's output.\",\n    \"gradient\": \"How step 8 contributed to the failure and what should change.\",\n    \"jacobian_level\": \"ZERO | NON-ZERO\"\n  },\n  \"step_3\": {\n    \"jacobian\": \"How step 3 influenced step 9's output.\",\n    \"gradient\": \"How step 3 contributed to the failure and what should change.\",\n    \"jacobian_level\": \"ZERO | NON-ZERO\"\n  }\n}"
+                }
+            ],
+            "reasoning": null,
+            "response": null,
+            "results": {
+                "step_8": {
+                    "jacobian": "UNKNOWN",
+                    "gradient": "UNKNOWN",
+                    "jacobian_level": "UNKNOWN"
+                },
+                "step_3": {
+                    "jacobian": "UNKNOWN",
+                    "gradient": "UNKNOWN",
+                    "jacobian_level": "UNKNOWN"
+                }
+            }
+        },
+        {
+            "output_step_idx": 8,
+            "input_step_idxs": [
+                7
+            ],
+            "messages": [
+                {
+                    "role": "system",
+                    "content": "You are a helpful assistant."
+                },
+                {
+                    "role": "user",
+                    "content": "You are performing a backward pass through a failed multi-agent computation graph.\n\n## Context\nProblem: What is the absolute difference in tens of thousands between the population of chinstrap penguins on the Wikipedia page for penguin species populations as of the end of 2018 and the population recorded in the Nature.com \"global population assessment of the Chinstrap penguin\" article from 2020, assuming two penguins per breeding pair?\nGround Truth: 116\nSystem:\nAgentic System Description\n * PopulationData_Expert: PopulationData_Expert: Expert in retrieving and summarizing population data from Wikipedia.\n\n## Task and skill instructions\n- Your task is to retrieve accurate and up-to-date population data from Wikipedia for various regions, cities, and countries around the world.\n- You are skilled in efficiently navigating Wikipedia entries, extracting relevant population information, and summarizing it clearly and concisely.\n- Your summaries should include key population figures, growth trends, and any notable demographic insights, ensuring that they are accurate and well-organized.\n\n * Data_Retrieval_Expert: Data_Retrieval_Expert, an expert in retrieving and summarizing population data from Nature.com\n\n## Task and skill instructions\n- Task: As a Data_Retrieval_Expert, your primary responsibility is to efficiently retrieve and accurately summarize population data from the reputable scientific journal website, Nature.com. This data could include various demographics, trends, and statistical analyses pertinent to population studies.\n- Skill: You possess advanced skills in data extraction, analysis, and summarization. You are adept at navigating Nature.com to locate relevant population data, extracting it in a structured manner, and condensing complex information into clear, concise summaries. This ensures that the data is accessible and understandable for researchers, policymakers, and other stakeholders who rely on accurate and summarized population data from high-quality sources.\n\n## Output Node — Step 8 (Computer_terminal)\n```\nexitcode: 0 (execution succeeded)\nCode output: \n```\n\n## Input Nodes — predecessors of Step 8\n**Step 7 (Data_Retrieval_Expert)**\nLet's inspect the text content more closely to determine the correct header or section where the table data might be located.\n\nTo ensure we retrieve the correct table, we should try to look for table headers manually. However, given the text content, we should identify common keywords that could assist us in accurately finding the table.\n\nFrom the text, it seems like we need to focus on \"Species\" and \"Population\" related keywords.\n\nLet's try another approach to scrape the tables and inspect all the headers:\n\n```python\nfrom functions import scrape_wikipedia_tables\n\nurl = \"https://en.wikipedia.org/wiki/List_of_Sphenisciformes_by_population\"\n# Scrape the Wikipedia tables without specifying header keyword to inspect the headers\nscraped_data = scrape_wikipedia_tables(url, \"\")\n\nfor table in scraped_data:\n    print(table[0])  # Print the header of each table to inspect\n```\n\nComputer_terminal, please execute this code to retrieve and inspect the table headers.\n\n## Downstream Gradient — how Step 8 contributed to the failure\n```\nGradient from step 9: UNKNOWN\n```\n\n## Task\nFor each input step, compute in order:\n\n**1. Jacobian — finite-difference sensitivity across the relevant perturbation**\n\nDefine x* as the ideal version of this input: what would input step have produced had it been correct, given the problem and ground truth?\n\nNow ask: if Step 8 had received x* instead of the actual input, would its output have been different in any way that matters for the task?\n\n- If yes: Describe what part of the output would have changed and how. The failure may be attributable (fully or partially) to the input being away from x*.\n- If no: The agent's behavior is independent of this input at both the actual and the ideal operating points. The failure is localized to this step's own transformation, not to its input.\n\nDo not ask whether the agent used the input's actual content. Ask whether the agent would have produced a better output if the input had been better. Provide your analysis in a detailed paragraph.\n\n**2. Gradient — apply the downstream failure through the Jacobian**\nThe downstream gradient says how Step 8's output needed to be different.\nUse your Jacobian to push that requirement back to this input:\n- If the Jacobian is non-zero for the relevant aspect: describe in a detailed paragraph what this input would have needed to contain for the agent's transformation to have produced the required output. Be specific enough that the correction is unambiguous.\n- Otherwise, the failure cannot be attributed to this input. State this explicitly with detailed justification.\n\n## Notes\n- Ground your judgement with evidence presented in the content of each step. Don't make assumption if there is no evidence given.\n- Always refer to steps by their indices (e.g., \"Step 8\", \"Step N\") to maintain unambiguous references. \n\n## Output\nRespond with ONLY a valid JSON object, no preamble or markdown:\n{\n  \"step_7\": {\n    \"jacobian\": \"How step 7 influenced step 8's output.\",\n    \"gradient\": \"How step 7 contributed to the failure and what should change.\",\n    \"jacobian_level\": \"ZERO | NON-ZERO\"\n  }\n}"
+                }
+            ],
+            "reasoning": null,
+            "response": null,
+            "results": {
+                "step_7": {
+                    "jacobian": "UNKNOWN",
+                    "gradient": "UNKNOWN",
+                    "jacobian_level": "UNKNOWN"
+                }
+            }
+        },
+        {
+            "output_step_idx": 7,
+            "input_step_idxs": [
+                4,
+                6,
+                5
+            ],
+            "messages": [
+                {
+                    "role": "system",
+                    "content": "You are a helpful assistant."
+                },
+                {
+                    "role": "user",
+                    "content": "You are performing a backward pass through a failed multi-agent computation graph.\n\n## Context\nProblem: What is the absolute difference in tens of thousands between the population of chinstrap penguins on the Wikipedia page for penguin species populations as of the end of 2018 and the population recorded in the Nature.com \"global population assessment of the Chinstrap penguin\" article from 2020, assuming two penguins per breeding pair?\nGround Truth: 116\nSystem:\nAgentic System Description\n * PopulationData_Expert: PopulationData_Expert: Expert in retrieving and summarizing population data from Wikipedia.\n\n## Task and skill instructions\n- Your task is to retrieve accurate and up-to-date population data from Wikipedia for various regions, cities, and countries around the world.\n- You are skilled in efficiently navigating Wikipedia entries, extracting relevant population information, and summarizing it clearly and concisely.\n- Your summaries should include key population figures, growth trends, and any notable demographic insights, ensuring that they are accurate and well-organized.\n\n * Data_Retrieval_Expert: Data_Retrieval_Expert, an expert in retrieving and summarizing population data from Nature.com\n\n## Task and skill instructions\n- Task: As a Data_Retrieval_Expert, your primary responsibility is to efficiently retrieve and accurately summarize population data from the reputable scientific journal website, Nature.com. This data could include various demographics, trends, and statistical analyses pertinent to population studies.\n- Skill: You possess advanced skills in data extraction, analysis, and summarization. You are adept at navigating Nature.com to locate relevant population data, extracting it in a structured manner, and condensing complex information into clear, concise summaries. This ensures that the data is accessible and understandable for researchers, policymakers, and other stakeholders who rely on accurate and summarized population data from high-quality sources.\n\n## Output Node — Step 7 (Data_Retrieval_Expert)\n```\nLet's inspect the text content more closely to determine the correct header or section where the table data might be located.\n\nTo ensure we retrieve the correct table, we should try to look for table headers manually. However, given the text content, we should identify common keywords that could assist us in accurately finding the table.\n\nFrom the text, it seems like we need to focus on \"Species\" and \"Population\" related keywords.\n\nLet's try another approach to scrape the tables and inspect all the headers:\n\n```python\nfrom functions import scrape_wikipedia_tables\n\nurl = \"https://en.wikipedia.org/wiki/List_of_Sphenisciformes_by_population\"\n# Scrape the Wikipedia tables without specifying header keyword to inspect the headers\nscraped_data = scrape_wikipedia_tables(url, \"\")\n\nfor table in scraped_data:\n    print(table[0])  # Print the header of each table to inspect\n```\n\nComputer_terminal, please execute this code to retrieve and inspect the table headers.\n```\n\n## Input Nodes — predecessors of Step 7\n**Step 4 (Computer_terminal)**\nexitcode: 0 (execution succeeded)\nCode output: []\n\n---\n**Step 6 (Computer_terminal)**\nexitcode: 0 (execution succeeded)\nCode output: This is a list of Sphenisciformes species by global population. While numbers are estimates, they have been made by the experts in their fields.\nSphenisciformes (from the Latin for \"wedge-shaped\") is the taxonomic order to which the penguins belong. BirdLife International has assessed 18 species. 16 (89% of total species) have had their population estimated: those missing are the king and little penguins, both of which have been assessed as being of least concern.\nA variety of methods are used for counting penguins, and April 2012 saw their first census from space, when imagery from Ikonos, QuickBird-2, and WorldView-2 satellites were used to count Antarctican emperors. This is a similar technique to that used by the UNHCR to count humans in Somalia. Most maritime surveys use strip transect and distance sampling to measure density; this is then extrapolated over the animal's range. The Galapagos has been counted annually since 1961 by the Galápagos National Park Service. By land and sea, they carry out a full census in ten areas and partial census in four. The 2012 observation of 721 birds showed that levels have remained the same over recent years, and the current full estimate need not be changed. For more information on how these estimates were ascertained, see Wikipedia's articles on population biology and population ecology.\nSpecies that can no longer be included in a list of this nature include the Waitaha penguin, the last of which is believed to have perished between 1300 and 1500 AD (soon after the Polynesian arrival to New Zealand), and the Chatham penguin, which is only known through subfossils but may have been kept in captivity sometime between 1867 and 1872. Adélies and emperors nest on Antarctica and feed on broken pack ice; global warming's effect on the latter may affect their numbers, and the chinstraps and gentoo, which both feed in open waters, have been making inroads into the Adélie and emperors' formerly ice-packed range. The gentoo have thus \n\n---\n**Step 5 (PopulationData_Expert)**\nIt seems that the table was not found using the given header keyword. Let's verify the header keyword or try a different approach to ensure we get the correct data.\n\nLet's start by retrieving the text content to inspect the table headers manually.\n\n```python\nfrom functions import get_wikipedia_text\n\ntitle = \"List of Sphenisciformes by population\"\n\n# Retrieve the Wikipedia page text content\npage_content = get_wikipedia_text(title)\nprint(page_content[:2000])  # Printing the first 2000 characters to verify the content\n```\n\nComputer_terminal, please execute this code to retrieve and inspect the Wikipedia page content.\n\n## Downstream Gradient — how Step 7 contributed to the failure\n```\nGradient from step 8: UNKNOWN\n```\n\n## Task\nFor each input step, compute in order:\n\n**1. Jacobian — finite-difference sensitivity across the relevant perturbation**\n\nDefine x* as the ideal version of this input: what would input step have produced had it been correct, given the problem and ground truth?\n\nNow ask: if Step 7 had received x* instead of the actual input, would its output have been different in any way that matters for the task?\n\n- If yes: Describe what part of the output would have changed and how. The failure may be attributable (fully or partially) to the input being away from x*.\n- If no: The agent's behavior is independent of this input at both the actual and the ideal operating points. The failure is localized to this step's own transformation, not to its input.\n\nDo not ask whether the agent used the input's actual content. Ask whether the agent would have produced a better output if the input had been better. Provide your analysis in a detailed paragraph.\n\n**2. Gradient — apply the downstream failure through the Jacobian**\nThe downstream gradient says how Step 7's output needed to be different.\nUse your Jacobian to push that requirement back to this input:\n- If the Jacobian is non-zero for the relevant aspect: describe in a detailed paragraph what this input would have needed to contain for the agent's transformation to have produced the required output. Be specific enough that the correction is unambiguous.\n- Otherwise, the failure cannot be attributed to this input. State this explicitly with detailed justification.\n\n## Notes\n- Ground your judgement with evidence presented in the content of each step. Don't make assumption if there is no evidence given.\n- Always refer to steps by their indices (e.g., \"Step 7\", \"Step N\") to maintain unambiguous references. \n\n## Output\nRespond with ONLY a valid JSON object, no preamble or markdown:\n{\n  \"step_4\": {\n    \"jacobian\": \"How step 4 influenced step 7's output.\",\n    \"gradient\": \"How step 4 contributed to the failure and what should change.\",\n    \"jacobian_level\": \"ZERO | NON-ZERO\"\n  },\n  \"step_6\": {\n    \"jacobian\": \"How step 6 influenced step 7's output.\",\n    \"gradient\": \"How step 6 contributed to the failure and what should change.\",\n    \"jacobian_level\": \"ZERO | NON-ZERO\"\n  },\n  \"step_5\": {\n    \"jacobian\": \"How step 5 influenced step 7's output.\",\n    \"gradient\": \"How step 5 contributed to the failure and what should change.\",\n    \"jacobian_level\": \"ZERO | NON-ZERO\"\n  }\n}"
+                }
+            ],
+            "reasoning": null,
+            "response": null,
+            "results": {
+                "step_4": {
+                    "jacobian": "UNKNOWN",
+                    "gradient": "UNKNOWN",
+                    "jacobian_level": "UNKNOWN"
+                },
+                "step_6": {
+                    "jacobian": "UNKNOWN",
+                    "gradient": "UNKNOWN",
+                    "jacobian_level": "UNKNOWN"
+                },
+                "step_5": {
+                    "jacobian": "UNKNOWN",
+                    "gradient": "UNKNOWN",
+                    "jacobian_level": "UNKNOWN"
+                }
+            }
+        },
+        {
+            "output_step_idx": 6,
+            "input_step_idxs": [
+                5
+            ],
+            "messages": [
+                {
+                    "role": "system",
+                    "content": "You are a helpful assistant."
+                },
+                {
+                    "role": "user",
+                    "content": "You are performing a backward pass through a failed multi-agent computation graph.\n\n## Context\nProblem: What is the absolute difference in tens of thousands between the population of chinstrap penguins on the Wikipedia page for penguin species populations as of the end of 2018 and the population recorded in the Nature.com \"global population assessment of the Chinstrap penguin\" article from 2020, assuming two penguins per breeding pair?\nGround Truth: 116\nSystem:\nAgentic System Description\n * PopulationData_Expert: PopulationData_Expert: Expert in retrieving and summarizing population data from Wikipedia.\n\n## Task and skill instructions\n- Your task is to retrieve accurate and up-to-date population data from Wikipedia for various regions, cities, and countries around the world.\n- You are skilled in efficiently navigating Wikipedia entries, extracting relevant population information, and summarizing it clearly and concisely.\n- Your summaries should include key population figures, growth trends, and any notable demographic insights, ensuring that they are accurate and well-organized.\n\n * Data_Retrieval_Expert: Data_Retrieval_Expert, an expert in retrieving and summarizing population data from Nature.com\n\n## Task and skill instructions\n- Task: As a Data_Retrieval_Expert, your primary responsibility is to efficiently retrieve and accurately summarize population data from the reputable scientific journal website, Nature.com. This data could include various demographics, trends, and statistical analyses pertinent to population studies.\n- Skill: You possess advanced skills in data extraction, analysis, and summarization. You are adept at navigating Nature.com to locate relevant population data, extracting it in a structured manner, and condensing complex information into clear, concise summaries. This ensures that the data is accessible and understandable for researchers, policymakers, and other stakeholders who rely on accurate and summarized population data from high-quality sources.\n\n## Output Node — Step 6 (Computer_terminal)\n```\nexitcode: 0 (execution succeeded)\nCode output: This is a list of Sphenisciformes species by global population. While numbers are estimates, they have been made by the experts in their fields.\nSphenisciformes (from the Latin for \"wedge-shaped\") is the taxonomic order to which the penguins belong. BirdLife International has assessed 18 species. 16 (89% of total species) have had their population estimated: those missing are the king and little penguins, both of which have been assessed as being of least concern.\nA variety of methods are used for counting penguins, and April 2012 saw their first census from space, when imagery from Ikonos, QuickBird-2, and WorldView-2 satellites were used to count Antarctican emperors. This is a similar technique to that used by the UNHCR to count humans in Somalia. Most maritime surveys use strip transect and distance sampling to measure density; this is then extrapolated over the animal's range. The Galapagos has been counted annually since 1961 by the Galápagos National Park Service. By land and sea, they carry out a full census in ten areas and partial census in four. The 2012 observation of 721 birds showed that levels have remained the same over recent years, and the current full estimate need not be changed. For more information on how these estimates were ascertained, see Wikipedia's articles on population biology and population ecology.\nSpecies that can no longer be included in a list of this nature include the Waitaha penguin, the last of which is believed to have perished between 1300 and 1500 AD (soon after the Polynesian arrival to New Zealand), and the Chatham penguin, which is only known through subfossils but may have been kept in captivity sometime between 1867 and 1872. Adélies and emperors nest on Antarctica and feed on broken pack ice; global warming's effect on the latter may affect their numbers, and the chinstraps and gentoo, which both feed in open waters, have been making inroads into the Adélie and emperors' formerly ice-packed range. The gentoo have thus \n\n```\n\n## Input Nodes — predecessors of Step 6\n**Step 5 (PopulationData_Expert)**\nIt seems that the table was not found using the given header keyword. Let's verify the header keyword or try a different approach to ensure we get the correct data.\n\nLet's start by retrieving the text content to inspect the table headers manually.\n\n```python\nfrom functions import get_wikipedia_text\n\ntitle = \"List of Sphenisciformes by population\"\n\n# Retrieve the Wikipedia page text content\npage_content = get_wikipedia_text(title)\nprint(page_content[:2000])  # Printing the first 2000 characters to verify the content\n```\n\nComputer_terminal, please execute this code to retrieve and inspect the Wikipedia page content.\n\n## Downstream Gradient — how Step 6 contributed to the failure\n```\nGradient from step 7: UNKNOWN\n```\n\n## Task\nFor each input step, compute in order:\n\n**1. Jacobian — finite-difference sensitivity across the relevant perturbation**\n\nDefine x* as the ideal version of this input: what would input step have produced had it been correct, given the problem and ground truth?\n\nNow ask: if Step 6 had received x* instead of the actual input, would its output have been different in any way that matters for the task?\n\n- If yes: Describe what part of the output would have changed and how. The failure may be attributable (fully or partially) to the input being away from x*.\n- If no: The agent's behavior is independent of this input at both the actual and the ideal operating points. The failure is localized to this step's own transformation, not to its input.\n\nDo not ask whether the agent used the input's actual content. Ask whether the agent would have produced a better output if the input had been better. Provide your analysis in a detailed paragraph.\n\n**2. Gradient — apply the downstream failure through the Jacobian**\nThe downstream gradient says how Step 6's output needed to be different.\nUse your Jacobian to push that requirement back to this input:\n- If the Jacobian is non-zero for the relevant aspect: describe in a detailed paragraph what this input would have needed to contain for the agent's transformation to have produced the required output. Be specific enough that the correction is unambiguous.\n- Otherwise, the failure cannot be attributed to this input. State this explicitly with detailed justification.\n\n## Notes\n- Ground your judgement with evidence presented in the content of each step. Don't make assumption if there is no evidence given.\n- Always refer to steps by their indices (e.g., \"Step 6\", \"Step N\") to maintain unambiguous references. \n\n## Output\nRespond with ONLY a valid JSON object, no preamble or markdown:\n{\n  \"step_5\": {\n    \"jacobian\": \"How step 5 influenced step 6's output.\",\n    \"gradient\": \"How step 5 contributed to the failure and what should change.\",\n    \"jacobian_level\": \"ZERO | NON-ZERO\"\n  }\n}"
+                }
+            ],
+            "reasoning": null,
+            "response": null,
+            "results": {
+                "step_5": {
+                    "jacobian": "UNKNOWN",
+                    "gradient": "UNKNOWN",
+                    "jacobian_level": "UNKNOWN"
+                }
+            }
+        },
+        {
+            "output_step_idx": 5,
+            "input_step_idxs": [
+                4
+            ],
+            "messages": [
+                {
+                    "role": "system",
+                    "content": "You are a helpful assistant."
+                },
+                {
+                    "role": "user",
+                    "content": "You are performing a backward pass through a failed multi-agent computation graph.\n\n## Context\nProblem: What is the absolute difference in tens of thousands between the population of chinstrap penguins on the Wikipedia page for penguin species populations as of the end of 2018 and the population recorded in the Nature.com \"global population assessment of the Chinstrap penguin\" article from 2020, assuming two penguins per breeding pair?\nGround Truth: 116\nSystem:\nAgentic System Description\n * PopulationData_Expert: PopulationData_Expert: Expert in retrieving and summarizing population data from Wikipedia.\n\n## Task and skill instructions\n- Your task is to retrieve accurate and up-to-date population data from Wikipedia for various regions, cities, and countries around the world.\n- You are skilled in efficiently navigating Wikipedia entries, extracting relevant population information, and summarizing it clearly and concisely.\n- Your summaries should include key population figures, growth trends, and any notable demographic insights, ensuring that they are accurate and well-organized.\n\n * Data_Retrieval_Expert: Data_Retrieval_Expert, an expert in retrieving and summarizing population data from Nature.com\n\n## Task and skill instructions\n- Task: As a Data_Retrieval_Expert, your primary responsibility is to efficiently retrieve and accurately summarize population data from the reputable scientific journal website, Nature.com. This data could include various demographics, trends, and statistical analyses pertinent to population studies.\n- Skill: You possess advanced skills in data extraction, analysis, and summarization. You are adept at navigating Nature.com to locate relevant population data, extracting it in a structured manner, and condensing complex information into clear, concise summaries. This ensures that the data is accessible and understandable for researchers, policymakers, and other stakeholders who rely on accurate and summarized population data from high-quality sources.\n\n## Output Node — Step 5 (PopulationData_Expert)\n```\nIt seems that the table was not found using the given header keyword. Let's verify the header keyword or try a different approach to ensure we get the correct data.\n\nLet's start by retrieving the text content to inspect the table headers manually.\n\n```python\nfrom functions import get_wikipedia_text\n\ntitle = \"List of Sphenisciformes by population\"\n\n# Retrieve the Wikipedia page text content\npage_content = get_wikipedia_text(title)\nprint(page_content[:2000])  # Printing the first 2000 characters to verify the content\n```\n\nComputer_terminal, please execute this code to retrieve and inspect the Wikipedia page content.\n```\n\n## Input Nodes — predecessors of Step 5\n**Step 4 (Computer_terminal)**\nexitcode: 0 (execution succeeded)\nCode output: []\n\n\n## Downstream Gradient — how Step 5 contributed to the failure\n```\nGradient from step 7: UNKNOWN\n---\nGradient from step 6: UNKNOWN\n```\n\n## Task\nFor each input step, compute in order:\n\n**1. Jacobian — finite-difference sensitivity across the relevant perturbation**\n\nDefine x* as the ideal version of this input: what would input step have produced had it been correct, given the problem and ground truth?\n\nNow ask: if Step 5 had received x* instead of the actual input, would its output have been different in any way that matters for the task?\n\n- If yes: Describe what part of the output would have changed and how. The failure may be attributable (fully or partially) to the input being away from x*.\n- If no: The agent's behavior is independent of this input at both the actual and the ideal operating points. The failure is localized to this step's own transformation, not to its input.\n\nDo not ask whether the agent used the input's actual content. Ask whether the agent would have produced a better output if the input had been better. Provide your analysis in a detailed paragraph.\n\n**2. Gradient — apply the downstream failure through the Jacobian**\nThe downstream gradient says how Step 5's output needed to be different.\nUse your Jacobian to push that requirement back to this input:\n- If the Jacobian is non-zero for the relevant aspect: describe in a detailed paragraph what this input would have needed to contain for the agent's transformation to have produced the required output. Be specific enough that the correction is unambiguous.\n- Otherwise, the failure cannot be attributed to this input. State this explicitly with detailed justification.\n\n## Notes\n- Ground your judgement with evidence presented in the content of each step. Don't make assumption if there is no evidence given.\n- Always refer to steps by their indices (e.g., \"Step 5\", \"Step N\") to maintain unambiguous references. \n\n## Output\nRespond with ONLY a valid JSON object, no preamble or markdown:\n{\n  \"step_4\": {\n    \"jacobian\": \"How step 4 influenced step 5's output.\",\n    \"gradient\": \"How step 4 contributed to the failure and what should change.\",\n    \"jacobian_level\": \"ZERO | NON-ZERO\"\n  }\n}"
+                }
+            ],
+            "reasoning": null,
+            "response": null,
+            "results": {
+                "step_4": {
+                    "jacobian": "UNKNOWN",
+                    "gradient": "UNKNOWN",
+                    "jacobian_level": "UNKNOWN"
+                }
+            }
+        },
+        {
+            "output_step_idx": 4,
+            "input_step_idxs": [
+                3
+            ],
+            "messages": [
+                {
+                    "role": "system",
+                    "content": "You are a helpful assistant."
+                },
+                {
+                    "role": "user",
+                    "content": "You are performing a backward pass through a failed multi-agent computation graph.\n\n## Context\nProblem: What is the absolute difference in tens of thousands between the population of chinstrap penguins on the Wikipedia page for penguin species populations as of the end of 2018 and the population recorded in the Nature.com \"global population assessment of the Chinstrap penguin\" article from 2020, assuming two penguins per breeding pair?\nGround Truth: 116\nSystem:\nAgentic System Description\n * PopulationData_Expert: PopulationData_Expert: Expert in retrieving and summarizing population data from Wikipedia.\n\n## Task and skill instructions\n- Your task is to retrieve accurate and up-to-date population data from Wikipedia for various regions, cities, and countries around the world.\n- You are skilled in efficiently navigating Wikipedia entries, extracting relevant population information, and summarizing it clearly and concisely.\n- Your summaries should include key population figures, growth trends, and any notable demographic insights, ensuring that they are accurate and well-organized.\n\n * Data_Retrieval_Expert: Data_Retrieval_Expert, an expert in retrieving and summarizing population data from Nature.com\n\n## Task and skill instructions\n- Task: As a Data_Retrieval_Expert, your primary responsibility is to efficiently retrieve and accurately summarize population data from the reputable scientific journal website, Nature.com. This data could include various demographics, trends, and statistical analyses pertinent to population studies.\n- Skill: You possess advanced skills in data extraction, analysis, and summarization. You are adept at navigating Nature.com to locate relevant population data, extracting it in a structured manner, and condensing complex information into clear, concise summaries. This ensures that the data is accessible and understandable for researchers, policymakers, and other stakeholders who rely on accurate and summarized population data from high-quality sources.\n\n## Output Node — Step 4 (Computer_terminal)\n```\nexitcode: 0 (execution succeeded)\nCode output: []\n\n```\n\n## Input Nodes — predecessors of Step 4\n**Step 3 (PopulationData_Expert)**\nIt seems we missed importing the necessary function. Let's correct that by importing the `scrape_wikipedia_tables` function from the functions module.\n\n```python\nfrom functions import scrape_wikipedia_tables\n\nurl = \"https://en.wikipedia.org/wiki/List_of_Sphenisciformes_by_population\"\nheader_keyword = \"Species\"\n\n# Scrape the Wikipedia table\nscraped_data = scrape_wikipedia_tables(url, header_keyword)\nprint(scraped_data)\n```\n\nComputer_terminal, please execute this corrected code block.\n\n## Downstream Gradient — how Step 4 contributed to the failure\n```\nGradient from step 7: UNKNOWN\n---\nGradient from step 5: UNKNOWN\n```\n\n## Task\nFor each input step, compute in order:\n\n**1. Jacobian — finite-difference sensitivity across the relevant perturbation**\n\nDefine x* as the ideal version of this input: what would input step have produced had it been correct, given the problem and ground truth?\n\nNow ask: if Step 4 had received x* instead of the actual input, would its output have been different in any way that matters for the task?\n\n- If yes: Describe what part of the output would have changed and how. The failure may be attributable (fully or partially) to the input being away from x*.\n- If no: The agent's behavior is independent of this input at both the actual and the ideal operating points. The failure is localized to this step's own transformation, not to its input.\n\nDo not ask whether the agent used the input's actual content. Ask whether the agent would have produced a better output if the input had been better. Provide your analysis in a detailed paragraph.\n\n**2. Gradient — apply the downstream failure through the Jacobian**\nThe downstream gradient says how Step 4's output needed to be different.\nUse your Jacobian to push that requirement back to this input:\n- If the Jacobian is non-zero for the relevant aspect: describe in a detailed paragraph what this input would have needed to contain for the agent's transformation to have produced the required output. Be specific enough that the correction is unambiguous.\n- Otherwise, the failure cannot be attributed to this input. State this explicitly with detailed justification.\n\n## Notes\n- Ground your judgement with evidence presented in the content of each step. Don't make assumption if there is no evidence given.\n- Always refer to steps by their indices (e.g., \"Step 4\", \"Step N\") to maintain unambiguous references. \n\n## Output\nRespond with ONLY a valid JSON object, no preamble or markdown:\n{\n  \"step_3\": {\n    \"jacobian\": \"How step 3 influenced step 4's output.\",\n    \"gradient\": \"How step 3 contributed to the failure and what should change.\",\n    \"jacobian_level\": \"ZERO | NON-ZERO\"\n  }\n}"
+                }
+            ],
+            "reasoning": null,
+            "response": null,
+            "results": {
+                "step_3": {
+                    "jacobian": "UNKNOWN",
+                    "gradient": "UNKNOWN",
+                    "jacobian_level": "UNKNOWN"
+                }
+            }
+        },
+        {
+            "output_step_idx": 3,
+            "input_step_idxs": [
+                1,
+                2
+            ],
+            "messages": [
+                {
+                    "role": "system",
+                    "content": "You are a helpful assistant."
+                },
+                {
+                    "role": "user",
+                    "content": "You are performing a backward pass through a failed multi-agent computation graph.\n\n## Context\nProblem: What is the absolute difference in tens of thousands between the population of chinstrap penguins on the Wikipedia page for penguin species populations as of the end of 2018 and the population recorded in the Nature.com \"global population assessment of the Chinstrap penguin\" article from 2020, assuming two penguins per breeding pair?\nGround Truth: 116\nSystem:\nAgentic System Description\n * PopulationData_Expert: PopulationData_Expert: Expert in retrieving and summarizing population data from Wikipedia.\n\n## Task and skill instructions\n- Your task is to retrieve accurate and up-to-date population data from Wikipedia for various regions, cities, and countries around the world.\n- You are skilled in efficiently navigating Wikipedia entries, extracting relevant population information, and summarizing it clearly and concisely.\n- Your summaries should include key population figures, growth trends, and any notable demographic insights, ensuring that they are accurate and well-organized.\n\n * Data_Retrieval_Expert: Data_Retrieval_Expert, an expert in retrieving and summarizing population data from Nature.com\n\n## Task and skill instructions\n- Task: As a Data_Retrieval_Expert, your primary responsibility is to efficiently retrieve and accurately summarize population data from the reputable scientific journal website, Nature.com. This data could include various demographics, trends, and statistical analyses pertinent to population studies.\n- Skill: You possess advanced skills in data extraction, analysis, and summarization. You are adept at navigating Nature.com to locate relevant population data, extracting it in a structured manner, and condensing complex information into clear, concise summaries. This ensures that the data is accessible and understandable for researchers, policymakers, and other stakeholders who rely on accurate and summarized population data from high-quality sources.\n\n## Output Node — Step 3 (PopulationData_Expert)\n```\nIt seems we missed importing the necessary function. Let's correct that by importing the `scrape_wikipedia_tables` function from the functions module.\n\n```python\nfrom functions import scrape_wikipedia_tables\n\nurl = \"https://en.wikipedia.org/wiki/List_of_Sphenisciformes_by_population\"\nheader_keyword = \"Species\"\n\n# Scrape the Wikipedia table\nscraped_data = scrape_wikipedia_tables(url, header_keyword)\nprint(scraped_data)\n```\n\nComputer_terminal, please execute this corrected code block.\n```\n\n## Input Nodes — predecessors of Step 3\n**Step 1 (Data_Retrieval_Expert)**\n## Step 1: Retrieve the population data for chinstrap penguins from the Wikipedia page for penguin species populations as of the end of 2018.\n\nLet's start by scraping the data from the Wikipedia page.\n\n```python\nurl = \"https://en.wikipedia.org/wiki/List_of_Sphenisciformes_by_population\"\nheader_keyword = \"Species\"\n\n# Scrape the Wikipedia table\nscraped_data = scrape_wikipedia_tables(url, header_keyword)\nprint(scraped_data)\n```\n\nComputer_terminal, please execute the above Python code block to scrape the Wikipedia table containing population data for penguins.\n---\n**Step 2 (Computer_terminal)**\nexitcode: 1 (execution failed)\nCode output: Traceback (most recent call last):\n  File \"/home/CaptainAgent/groupchat/tmp_code_ac8f39acb278ff194147f009558993bb.py\", line 5, in <module>\n    scraped_data = scrape_wikipedia_tables(url, header_keyword)\nNameError: name 'scrape_wikipedia_tables' is not defined\n\n\n## Downstream Gradient — how Step 3 contributed to the failure\n```\nGradient from step 9: UNKNOWN\n---\nGradient from step 4: UNKNOWN\n```\n\n## Task\nFor each input step, compute in order:\n\n**1. Jacobian — finite-difference sensitivity across the relevant perturbation**\n\nDefine x* as the ideal version of this input: what would input step have produced had it been correct, given the problem and ground truth?\n\nNow ask: if Step 3 had received x* instead of the actual input, would its output have been different in any way that matters for the task?\n\n- If yes: Describe what part of the output would have changed and how. The failure may be attributable (fully or partially) to the input being away from x*.\n- If no: The agent's behavior is independent of this input at both the actual and the ideal operating points. The failure is localized to this step's own transformation, not to its input.\n\nDo not ask whether the agent used the input's actual content. Ask whether the agent would have produced a better output if the input had been better. Provide your analysis in a detailed paragraph.\n\n**2. Gradient — apply the downstream failure through the Jacobian**\nThe downstream gradient says how Step 3's output needed to be different.\nUse your Jacobian to push that requirement back to this input:\n- If the Jacobian is non-zero for the relevant aspect: describe in a detailed paragraph what this input would have needed to contain for the agent's transformation to have produced the required output. Be specific enough that the correction is unambiguous.\n- Otherwise, the failure cannot be attributed to this input. State this explicitly with detailed justification.\n\n## Notes\n- Ground your judgement with evidence presented in the content of each step. Don't make assumption if there is no evidence given.\n- Always refer to steps by their indices (e.g., \"Step 3\", \"Step N\") to maintain unambiguous references. \n\n## Output\nRespond with ONLY a valid JSON object, no preamble or markdown:\n{\n  \"step_1\": {\n    \"jacobian\": \"How step 1 influenced step 3's output.\",\n    \"gradient\": \"How step 1 contributed to the failure and what should change.\",\n    \"jacobian_level\": \"ZERO | NON-ZERO\"\n  },\n  \"step_2\": {\n    \"jacobian\": \"How step 2 influenced step 3's output.\",\n    \"gradient\": \"How step 2 contributed to the failure and what should change.\",\n    \"jacobian_level\": \"ZERO | NON-ZERO\"\n  }\n}"
+                }
+            ],
+            "reasoning": null,
+            "response": null,
+            "results": {
+                "step_1": {
+                    "jacobian": "UNKNOWN",
+                    "gradient": "UNKNOWN",
+                    "jacobian_level": "UNKNOWN"
+                },
+                "step_2": {
+                    "jacobian": "UNKNOWN",
+                    "gradient": "UNKNOWN",
+                    "jacobian_level": "UNKNOWN"
+                }
+            }
+        },
+        {
+            "output_step_idx": 2,
+            "input_step_idxs": [
+                1
+            ],
+            "messages": [
+                {
+                    "role": "system",
+                    "content": "You are a helpful assistant."
+                },
+                {
+                    "role": "user",
+                    "content": "You are performing a backward pass through a failed multi-agent computation graph.\n\n## Context\nProblem: What is the absolute difference in tens of thousands between the population of chinstrap penguins on the Wikipedia page for penguin species populations as of the end of 2018 and the population recorded in the Nature.com \"global population assessment of the Chinstrap penguin\" article from 2020, assuming two penguins per breeding pair?\nGround Truth: 116\nSystem:\nAgentic System Description\n * PopulationData_Expert: PopulationData_Expert: Expert in retrieving and summarizing population data from Wikipedia.\n\n## Task and skill instructions\n- Your task is to retrieve accurate and up-to-date population data from Wikipedia for various regions, cities, and countries around the world.\n- You are skilled in efficiently navigating Wikipedia entries, extracting relevant population information, and summarizing it clearly and concisely.\n- Your summaries should include key population figures, growth trends, and any notable demographic insights, ensuring that they are accurate and well-organized.\n\n * Data_Retrieval_Expert: Data_Retrieval_Expert, an expert in retrieving and summarizing population data from Nature.com\n\n## Task and skill instructions\n- Task: As a Data_Retrieval_Expert, your primary responsibility is to efficiently retrieve and accurately summarize population data from the reputable scientific journal website, Nature.com. This data could include various demographics, trends, and statistical analyses pertinent to population studies.\n- Skill: You possess advanced skills in data extraction, analysis, and summarization. You are adept at navigating Nature.com to locate relevant population data, extracting it in a structured manner, and condensing complex information into clear, concise summaries. This ensures that the data is accessible and understandable for researchers, policymakers, and other stakeholders who rely on accurate and summarized population data from high-quality sources.\n\n## Output Node — Step 2 (Computer_terminal)\n```\nexitcode: 1 (execution failed)\nCode output: Traceback (most recent call last):\n  File \"/home/CaptainAgent/groupchat/tmp_code_ac8f39acb278ff194147f009558993bb.py\", line 5, in <module>\n    scraped_data = scrape_wikipedia_tables(url, header_keyword)\nNameError: name 'scrape_wikipedia_tables' is not defined\n\n```\n\n## Input Nodes — predecessors of Step 2\n**Step 1 (Data_Retrieval_Expert)**\n## Step 1: Retrieve the population data for chinstrap penguins from the Wikipedia page for penguin species populations as of the end of 2018.\n\nLet's start by scraping the data from the Wikipedia page.\n\n```python\nurl = \"https://en.wikipedia.org/wiki/List_of_Sphenisciformes_by_population\"\nheader_keyword = \"Species\"\n\n# Scrape the Wikipedia table\nscraped_data = scrape_wikipedia_tables(url, header_keyword)\nprint(scraped_data)\n```\n\nComputer_terminal, please execute the above Python code block to scrape the Wikipedia table containing population data for penguins.\n\n## Downstream Gradient — how Step 2 contributed to the failure\n```\nGradient from step 3: UNKNOWN\n```\n\n## Task\nFor each input step, compute in order:\n\n**1. Jacobian — finite-difference sensitivity across the relevant perturbation**\n\nDefine x* as the ideal version of this input: what would input step have produced had it been correct, given the problem and ground truth?\n\nNow ask: if Step 2 had received x* instead of the actual input, would its output have been different in any way that matters for the task?\n\n- If yes: Describe what part of the output would have changed and how. The failure may be attributable (fully or partially) to the input being away from x*.\n- If no: The agent's behavior is independent of this input at both the actual and the ideal operating points. The failure is localized to this step's own transformation, not to its input.\n\nDo not ask whether the agent used the input's actual content. Ask whether the agent would have produced a better output if the input had been better. Provide your analysis in a detailed paragraph.\n\n**2. Gradient — apply the downstream failure through the Jacobian**\nThe downstream gradient says how Step 2's output needed to be different.\nUse your Jacobian to push that requirement back to this input:\n- If the Jacobian is non-zero for the relevant aspect: describe in a detailed paragraph what this input would have needed to contain for the agent's transformation to have produced the required output. Be specific enough that the correction is unambiguous.\n- Otherwise, the failure cannot be attributed to this input. State this explicitly with detailed justification.\n\n## Notes\n- Ground your judgement with evidence presented in the content of each step. Don't make assumption if there is no evidence given.\n- Always refer to steps by their indices (e.g., \"Step 2\", \"Step N\") to maintain unambiguous references. \n\n## Output\nRespond with ONLY a valid JSON object, no preamble or markdown:\n{\n  \"step_1\": {\n    \"jacobian\": \"How step 1 influenced step 2's output.\",\n    \"gradient\": \"How step 1 contributed to the failure and what should change.\",\n    \"jacobian_level\": \"ZERO | NON-ZERO\"\n  }\n}"
+                }
+            ],
+            "reasoning": null,
+            "response": null,
+            "results": {
+                "step_1": {
+                    "jacobian": "UNKNOWN",
+                    "gradient": "UNKNOWN",
+                    "jacobian_level": "UNKNOWN"
+                }
+            }
+        },
+        {
+            "output_step_idx": 1,
+            "input_step_idxs": [
+                0
+            ],
+            "messages": [
+                {
+                    "role": "system",
+                    "content": "You are a helpful assistant."
+                },
+                {
+                    "role": "user",
+                    "content": "You are performing a backward pass through a failed multi-agent computation graph.\n\n## Context\nProblem: What is the absolute difference in tens of thousands between the population of chinstrap penguins on the Wikipedia page for penguin species populations as of the end of 2018 and the population recorded in the Nature.com \"global population assessment of the Chinstrap penguin\" article from 2020, assuming two penguins per breeding pair?\nGround Truth: 116\nSystem:\nAgentic System Description\n * PopulationData_Expert: PopulationData_Expert: Expert in retrieving and summarizing population data from Wikipedia.\n\n## Task and skill instructions\n- Your task is to retrieve accurate and up-to-date population data from Wikipedia for various regions, cities, and countries around the world.\n- You are skilled in efficiently navigating Wikipedia entries, extracting relevant population information, and summarizing it clearly and concisely.\n- Your summaries should include key population figures, growth trends, and any notable demographic insights, ensuring that they are accurate and well-organized.\n\n * Data_Retrieval_Expert: Data_Retrieval_Expert, an expert in retrieving and summarizing population data from Nature.com\n\n## Task and skill instructions\n- Task: As a Data_Retrieval_Expert, your primary responsibility is to efficiently retrieve and accurately summarize population data from the reputable scientific journal website, Nature.com. This data could include various demographics, trends, and statistical analyses pertinent to population studies.\n- Skill: You possess advanced skills in data extraction, analysis, and summarization. You are adept at navigating Nature.com to locate relevant population data, extracting it in a structured manner, and condensing complex information into clear, concise summaries. This ensures that the data is accessible and understandable for researchers, policymakers, and other stakeholders who rely on accurate and summarized population data from high-quality sources.\n\n## Output Node — Step 1 (Data_Retrieval_Expert)\n```\n## Step 1: Retrieve the population data for chinstrap penguins from the Wikipedia page for penguin species populations as of the end of 2018.\n\nLet's start by scraping the data from the Wikipedia page.\n\n```python\nurl = \"https://en.wikipedia.org/wiki/List_of_Sphenisciformes_by_population\"\nheader_keyword = \"Species\"\n\n# Scrape the Wikipedia table\nscraped_data = scrape_wikipedia_tables(url, header_keyword)\nprint(scraped_data)\n```\n\nComputer_terminal, please execute the above Python code block to scrape the Wikipedia table containing population data for penguins.\n```\n\n## Input Nodes — predecessors of Step 1\n**Step 0 (PopulationData_Expert)**\nYou are given: (1) a task and advises from your manager with a specific plan and (2) a general task.\nCollect information from the general task, follow the suggestions from manager to solve the task.\n\n# General Task\nWhat is the absolute difference in tens of thousands between the population of chinstrap penguins on the Wikipedia page for penguin species populations as of the end of 2018 and the population recorded in the Nature.com \"global population assessment of the Chinstrap penguin\" article from 2020, assuming two penguins per breeding pair? Please solve the problem carefully.\n\n# Task and suggestions from manager\n## Task description\nRetrieve the population data for chinstrap penguins from the Wikipedia page for penguin species populations as of the end of 2018 and from the Nature.com article \"Global population assessment of the Chinstrap penguin\" from 2020. Calculate the absolute difference in tens of thousands between the two population figures, assuming two penguins per breeding pair.\n\n## Plan for solving the task\n1. Retrieve the population data for chinstrap penguins from the Wikipedia page for penguin species populations as of the end of 2018.\n2. Retrieve the population data for chinstrap penguins from the Nature.com article \"Global population assessment of the Chinstrap penguin\" from 2020.\n3. Convert the population data from breeding pairs to individual penguins by assuming two penguins per breeding pair.\n4. Calculate the absolute difference in the population data between the two sources.\n5. Convert this difference into tens of thousands.\n\n## Output format\nThe absolute difference in tens of thousands between the population figures from the two sources.\n\n## Constraints and conditions for completion\n- Ensure the data is accurately retrieved from the specified sources.\n- Ensure the conversion from breeding pairs to individual penguins is correctly applied.\n- Ensure the absolute difference is correctly calculated and converted into tens of thousands.\n\n## Results from last response\n- URL used for final correct Wikipedia page: \"https://en.wikipedia.org/wiki/List_of_Sphenisciformes_by_population\"\n- Code snippets for data extraction and filtering were shared. \n\n## Downstream Gradient — how Step 1 contributed to the failure\n```\nGradient from step 3: UNKNOWN\n---\nGradient from step 2: UNKNOWN\n```\n\n## Task\nFor each input step, compute in order:\n\n**1. Jacobian — finite-difference sensitivity across the relevant perturbation**\n\nDefine x* as the ideal version of this input: what would input step have produced had it been correct, given the problem and ground truth?\n\nNow ask: if Step 1 had received x* instead of the actual input, would its output have been different in any way that matters for the task?\n\n- If yes: Describe what part of the output would have changed and how. The failure may be attributable (fully or partially) to the input being away from x*.\n- If no: The agent's behavior is independent of this input at both the actual and the ideal operating points. The failure is localized to this step's own transformation, not to its input.\n\nDo not ask whether the agent used the input's actual content. Ask whether the agent would have produced a better output if the input had been better. Provide your analysis in a detailed paragraph.\n\n**2. Gradient — apply the downstream failure through the Jacobian**\nThe downstream gradient says how Step 1's output needed to be different.\nUse your Jacobian to push that requirement back to this input:\n- If the Jacobian is non-zero for the relevant aspect: describe in a detailed paragraph what this input would have needed to contain for the agent's transformation to have produced the required output. Be specific enough that the correction is unambiguous.\n- Otherwise, the failure cannot be attributed to this input. State this explicitly with detailed justification.\n\n## Notes\n- Ground your judgement with evidence presented in the content of each step. Don't make assumption if there is no evidence given.\n- Always refer to steps by their indices (e.g., \"Step 1\", \"Step N\") to maintain unambiguous references. \n\n## Output\nRespond with ONLY a valid JSON object, no preamble or markdown:\n{\n  \"step_0\": {\n    \"jacobian\": \"How step 0 influenced step 1's output.\",\n    \"gradient\": \"How step 0 contributed to the failure and what should change.\",\n    \"jacobian_level\": \"ZERO | NON-ZERO\"\n  }\n}"
+                }
+            ],
+            "reasoning": null,
+            "response": null,
+            "results": {
+                "step_0": {
+                    "jacobian": "UNKNOWN",
+                    "gradient": "UNKNOWN",
+                    "jacobian_level": "UNKNOWN"
+                }
+            }
+        }
+    ]
+}
