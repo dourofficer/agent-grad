@@ -170,9 +170,13 @@ week 3 & 4
     note: i want to position agent-grad to tackle long trajectories well specifically.
     this means if agent-grad works, it should perform reasonably on short trajectories,
     and exceeds other baselines on long trajectories.
-    [ ] how well agent-grad performs on short vs. long context.
+    [-] how well agent-grad performs 
+        [-] on short vs. long context.
+            > as expected, the longer the trajectory, the better the recall.
+        [ ] on w/ and wo/ GT.
     [ ] error location. difference when the error is early in the trajectory vs. late
     [ ] most common errors in labeled data.
+        > only bring things that i can take advantage of.
     [ ] most common errors in agent-grad's gradients.
         [ ] vanishing gradient: once idenified zero-gradient, following gradients are zero.
         [ ] blame diffusion: error attribution spreads across steps.

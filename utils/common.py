@@ -39,21 +39,22 @@ def _extract_metadata(data):
     Includes specific requested fields and any other metadata from the dataset,
     while excluding heavy fields like history and system_prompt.
     """
-    labels = {
-        "question": data.get("question"),
-        "ground_truth": data.get("ground_truth"),
-        "is_corrected": data.get("is_corrected"),
-        "mistake_agent": data.get("mistake_agent"),
-        "mistake_step": data.get("mistake_step"),
-        "mistake_reason": data.get("mistake_reason"),
-        "mistake_type": data.get("mistake_type"),
-        "question_id": data.get("question_ID"), 
+    metadata = {
+        "question":           data.get("question"),
+        "ground_truth":       data.get("ground_truth"),
+        "is_corrected":       data.get("is_corrected"),
+        "mistake_agent":      data.get("mistake_agent"),
+        "mistake_step":       data.get("mistake_step"),
+        "mistake_reason":     data.get("mistake_reason"),
+        "mistake_type":       data.get("mistake_type"),
+        "question_id":        data.get("question_ID"), 
         "system_description": data.get("system_prompt"),
-        "subset": data.get("subset"), # this is injected, not presented in original file.
-        "filename": data.get("filename"), # this as well is injected.
+        "subset":             data.get("subset"), # this is injected, not presented in original file.
+        "filename":           data.get("filename"), # this as well is injected.
+        "include_gt":         data.get("include_gt"), # this is injected during running inference.
     }
             
-    return labels
+    return metadata
 
 def _quick_vllm(prompt):
     config = {

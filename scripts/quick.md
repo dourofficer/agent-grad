@@ -81,16 +81,25 @@ python -m cli.backprop \
     --start_idx 0 --end_idx 10
 
 # backprop version 2
-python -m cli.backprop2 \
+python -m cli.backprop \
     --config configs/gpt-oss-20b.yaml \
     --input  data/ww/algorithm-generated \
     --output outputs/gpt-oss-20b-v2/agent-grad/algorithm-generated \
     --start_idx 0 --end_idx 10
 
-python -m cli.backprop2 \
+# without ground truth
+python -m cli.backprop \
+    --config configs/gpt-oss-20b.yaml \
+    --input  data/ww/algorithm-generated \
+    --output outputs/gpt-oss-20b-wogt/agent-grad/algorithm-generated \
+    --no_gt \
+    --start_idx 0 --end_idx 10
+
+python -m cli.backprop \
     --config configs/gpt-oss-20b.yaml \
     --input  data/ww/hand-crafted \
-    --output outputs/gpt-oss-20b-v2/agent-grad/hand-crafted \
+    --output outputs/gpt-oss-20b-wogt/agent-grad/hand-crafted \
+    --no_gt \
     --start_idx 0 --end_idx 10
 ```
 
@@ -173,7 +182,7 @@ python -m cli.predict \
     --method agent_grad
 
 python -m cli.predict \
-    --dir outputs/gpt-oss-20b-v2/agent-grad-2/hand-crafted \
+    --dir outputs/gpt-oss-20b-v2/agent-grad/hand-crafted \
     --method agent_grad
 ```
 
@@ -215,7 +224,7 @@ python -m cli.evaluate \
 
 # Full sweep over all methods × subsets × k values → TSV
 python -m cli.evaluate --sweep \
-    --save outputs/gpt-oss-20b/sweep_results.tsv
+    --save outputs/gpt-oss-20b_sweep-results-2.tsv
 ```
 
 ---

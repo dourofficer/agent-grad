@@ -1,0 +1,13 @@
+model	strategy	subset	trajectory_length	total	agent_acc	step_acc
+gpt-oss-20b	all-at-once	hand-crafted	5-23	20	50.0	55.0
+gpt-oss-20b	all-at-once	hand-crafted	24-58	19	31.58	15.79
+gpt-oss-20b	all-at-once	hand-crafted	59+	19	21.05	0.0
+gpt-oss-20b	step-by-step	hand-crafted	5-23	20	40.0	40.0
+gpt-oss-20b	step-by-step	hand-crafted	24-58	19	26.32	10.53
+gpt-oss-20b	step-by-step	hand-crafted	59+	19	26.32	5.26
+gpt-oss-20b-v2	agent-grad	hand-crafted	6-24	20	0.0	5.0
+gpt-oss-20b-v2	agent-grad	hand-crafted	25-59	19	0.0	0.0
+gpt-oss-20b-v2	agent-grad	hand-crafted	60+	19	0.0	0.0
+gpt-oss-20b-v2	agent-grad-2	hand-crafted	6-24	20	0.0	5.0
+gpt-oss-20b-v2	agent-grad-2	hand-crafted	25-59	19	0.0	0.0
+gpt-oss-20b-v2	agent-grad-2	hand-crafted	60+	19	5.26	5.26
