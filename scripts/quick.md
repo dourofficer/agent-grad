@@ -161,6 +161,7 @@ python -m cli.inference \
 Run after inference to write `predictions` into each output JSON.
 
 ```bash
+# hand-crafted
 python -m cli.predict \
     --dir    outputs/gpt-oss-20b/agent-grad/hand-crafted \
     --method agent_grad
@@ -184,6 +185,20 @@ python -m cli.predict \
 python -m cli.predict \
     --dir outputs/gpt-oss-20b-v2/agent-grad/hand-crafted \
     --method agent_grad
+
+# algorithm-generated
+python -m cli.predict \
+    --dir outputs/gpt-oss-20b-v2/agent-grad/algorithm-generated \
+    --method agent_grad
+
+python -m cli.predict \
+    --dir    outputs/gpt-oss-20b/all-at-once/algorithm-generated \
+    --method all_at_once
+
+python -m cli.predict \
+    --dir    outputs/gpt-oss-20b/step-by-step/algorithm-generated \
+    --method step_by_step
+
 ```
 
 ---
@@ -223,8 +238,20 @@ python -m cli.evaluate \
     --save outputs/gpt-oss-20b/results_step-by-step_algorithm-generated.json
 
 # Full sweep over all methods × subsets × k values → TSV
-python -m cli.evaluate --sweep \
-    --save outputs/gpt-oss-20b_sweep-results-2.tsv
+python -m cli.evaluate \
+    --sweep \
+    --save outputs/gpt-oss-20b_sweep_algo-generated.tsv
+
+python -m cli.evaluate \
+    --sweep \
+    --by_length --n_bins 3 \
+    --save outputs/gpt-oss-20b_sweep-by-length.tsv
+
+python -m cli.visualize \
+    --file outputs/gpt-oss-20b_sweep-by-length.tsv \
+    --metric step_acc \
+    --by_length \
+    --save outputs/visualization/step_acc_by_length.png
 ```
 
 ---

@@ -1,0 +1,10 @@
+model	strategy	subset	k	agent_acc	step_acc
+gpt-oss-20b	all-at-once	algorithm-generated	1	61.9	49.21
+gpt-oss-20b	all-at-once	algorithm-generated	3	61.9	49.21
+gpt-oss-20b	all-at-once	algorithm-generated	5	61.9	49.21
+gpt-oss-20b	step-by-step	algorithm-generated	1	51.59	32.54
+gpt-oss-20b	step-by-step	algorithm-generated	3	72.22	52.38
+gpt-oss-20b	step-by-step	algorithm-generated	5	74.6	59.52
+gpt-oss-20b-v2	agent-grad	algorithm-generated	1	50.79	23.02
+gpt-oss-20b-v2	agent-grad	algorithm-generated	3	87.3	61.11
+gpt-oss-20b-v2	agent-grad	algorithm-generated	5	90.48	77.78

@@ -171,7 +171,7 @@ week 3 & 4
     this means if agent-grad works, it should perform reasonably on short trajectories,
     and exceeds other baselines on long trajectories.
     [-] how well agent-grad performs 
-        [-] on short vs. long context.
+        [x] on short vs. long context.
             > as expected, the longer the trajectory, the better the recall.
         [ ] on w/ and wo/ GT.
     [ ] error location. difference when the error is early in the trajectory vs. late
@@ -180,10 +180,14 @@ week 3 & 4
     [ ] most common errors in agent-grad's gradients.
         [ ] vanishing gradient: once idenified zero-gradient, following gradients are zero.
         [ ] blame diffusion: error attribution spreads across steps.
-        [ ] ...
+        ---
+        [ ] 42.json: wrong jacobian. 
+            ...: oracle leakage
+        NOTE THE 21.json, a good example of failure.
         make this quantitative — e.g., "out of 10 long-context failures, 4 were vanishing 
         gradient, 3 were blame diffusion, 2 were graph construction errors, 1 was LLM 
         hallucination in the backward prompt."
+    [ ] inspect: From which step the gradients started being inaccurate?
     [ ] inspect which samples that agent grad get correct and other baselines fail, and
         vice versa.
     [ ] consider the framing: the decisive error step should be the last step receiving 

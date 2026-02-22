@@ -22,6 +22,11 @@ CONFIGS = [
     'outputs/gpt-oss-20b-v2/agent-grad/hand-crafted',
     # 'outputs/gpt-oss-20b-v2/agent-grad-2/hand-crafted',
 ]
+CONFIGS = [
+    "outputs/gpt-oss-20b/all-at-once/algorithm-generated",
+    "outputs/gpt-oss-20b/step-by-step/algorithm-generated",
+    'outputs/gpt-oss-20b-v2/agent-grad/algorithm-generated',
+]
 K_VALUES = [1, 3, 5, 10, 20]
 
 
