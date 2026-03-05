@@ -221,3 +221,15 @@ week 7
 [ ] change the prompt for computing jacobian. make it not conflate what is needed in hindsight 
     with what could have been done given available information and capabilities.
 [ ] may think of a recursive formula
+[ ] maybe try the framing: at each step backward, try to identify which information is missing 
+    to correct the traj. diff from current: why try to speculate how the step can be better.
+    the new framing makes it like an investigation case, strip away counterfactual burden
+    the current framing is similar to good old text-grad
+    for example, predicted: 300k, label: 200k.
+    -> s4: "final answer should be 200k instead of 300k"
+    -> s3: "this computation step should output 200k instead 300k"
+    -> s2: "this step should include the entity having statistics resulting to 200k"
+    -> s1: "this step should make query to find the entity. yeah it did. no blame here"
+    => s2 is the error step.
+[ ] find a way to regulate gradient. gradient clipping maybe: default to append gradient
+    after reaching above a length threshold, compress the gradient.
