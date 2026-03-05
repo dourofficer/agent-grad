@@ -166,7 +166,7 @@ week 3 & 4
     [ ] inspect why some chains are marked with many (consecutive) ORIGINATING_ERROR
 
 
-[ ] make report
+[-] make report: made a first version
     note: i want to position agent-grad to tackle long trajectories well specifically.
     this means if agent-grad works, it should perform reasonably on short trajectories,
     and exceeds other baselines on long trajectories.
@@ -177,9 +177,9 @@ week 3 & 4
     [ ] error location. difference when the error is early in the trajectory vs. late
     [ ] most common errors in labeled data.
         > only bring things that i can take advantage of.
-    [ ] most common errors in agent-grad's gradients.
-        [ ] vanishing gradient: once idenified zero-gradient, following gradients are zero.
-        [ ] blame diffusion: error attribution spreads across steps.
+    [x] most common errors in agent-grad's gradients.
+        [x] vanishing gradient: once idenified zero-gradient, following gradients are zero.
+        [x] corrupted gradient: ...
         ---
         [ ] 42.json: wrong jacobian. 
             ...: oracle leakage
@@ -187,11 +187,37 @@ week 3 & 4
         make this quantitative — e.g., "out of 10 long-context failures, 4 were vanishing 
         gradient, 3 were blame diffusion, 2 were graph construction errors, 1 was LLM 
         hallucination in the backward prompt."
-    [ ] inspect: From which step the gradients started being inaccurate?
+    [x] inspect: From which step the gradients started being inaccurate?
     [ ] inspect which samples that agent grad get correct and other baselines fail, and
         vice versa.
-    [ ] consider the framing: the decisive error step should be the last step receiving 
+    [-] consider the framing: the decisive error step should be the last step receiving 
         non-zero gradient during backpropagation. 
         > for the correctly-predicted examples, check: does the gradient actually stop 
         (or nearly stop) at the labeled step? For incorrect ones, does it stop too early or 
         leak through.
+
+week 5
+[ ] conditions for agent-grad to work
+    [ ] we knew the formulation needs Gradient & Jacobian to work. but the correct structure,
+	or format these two computation take is not solved.
+	> we may find training dataset with gold label. use LLM to generate backward trajectory.
+    [ ] we should know the exact context tranformation/dependency of the trajectory
+	> this can only be achieved if we recorded the dependency during the system inference.
+    [ ] we should be able to model the capabilities of agents as accurately as possible.
+	> this seems close to the previouse point.
+
+[ ] thoughts
+    [x] if i provide agent-grad with context of steps[k:], it seems just like step-by-step
+	approach, but in reverse. 
+
+week 7
+[ ] ensure a better capability model of agent-grad:
+    for each agent, aggregate their according prompts from: 
+    https://github.com/microsoft/autogen/tree/v0.4.4/python/packages/autogen-magentic-one
+    go to src/autogen_magentic_one
+
+[ ] maybe compute jacobian first, in parrallel, inspired by textual equilibrium work
+[ ] must improve dependency graph
+[ ] change the prompt for computing jacobian. make it not conflate what is needed in hindsight 
+    with what could have been done given available information and capabilities.
+[ ] may think of a recursive formula
